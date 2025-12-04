@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Trang chủ - Bộ công cụ hỗ trợ giảng dạy dành cho giáo viên</title>
+
+  <style>
+    :root { --header-height: 0px; }
+    html, body { 
+        margin:0; 
+        min-height: 100vh; 
+        padding:0; 
+        box-sizing:border-box; 
+        font-family:Arial, sans-serif; 
+        overflow-x:hidden;
+        -webkit-font-smoothing:antialiased; 
+        -moz-osx-font-smoothing:grayscale; 
+        background-color:#E0F7FA; 
+        color:#333; 
+        transition: background-color .35s, color .35s; 
+    }
+
+    /* Header cố định */
+    #fixed-header{ position:fixed; top:0; left:0; right:0; z-index:9990; background:rgba(255,255,255,.95); border-bottom:1px solid #00BFFF; box-shadow:0 2px 5px rgba(0,0,0,.1); padding:5px 15px; display:flex; flex-direction:column; align-items:center; }
+    #header-row-1{ display:flex; align-items:center; justify-content:space-between; width:100%; margin-bottom:5px; }
+    .header-title{ display:flex; align-items:center; flex:1; }
+    #fixed-header h1{ margin:0; font-family:"Times New Roman", Times, serif; font-weight:900; font-size:26px; color:blue; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; text-shadow:1px 1px 2px rgba(0,0,0,.2); }
+    #greeting-box{ display:block; padding:0; font-size:13px; line-height:1.2; }
+    #greeting-box .controls{ display:flex; gap:6px; align-items:center; }
+    #header-fullscreen-btn {
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        border-radius: 50%; /* Tròn */
+        font-size: 18px; /* Kích thước biểu tượng */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    #greeting{ margin:0; font-weight:bold; font-size:18px; color:blue; }
+
+    /* ROW 2 - Zalo/Stats/DateTime - PC Layout */
+    #header-row-2{ 
+        width:100%; 
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size:13.5px; 
+        padding-bottom:3px; 
+        color:#555; 
+        font-family:Arial, sans-serif;
+    }
+    #header-row-2 span{ 
+        display:inline-block; 
+        margin:0 5px; 
+        white-space: nowrap; /* Đảm bảo không bị xuống dòng */
+    }
+
+    /* CSS chung cho Zalo và Thống kê */
+#header-row-2 .stats-info, #header-row-2 .zalo-info {
+    flex-shrink: 0; /* Không cho co lại */
+    padding: 0 5px;
+    font-size: 13px; /* Kích thước chữ nhỏ hơn */
+    font-weight: bold;
+}
+    
+/* Căn giữa thông tin ngày/giờ/lời chúc (ĐÃ GỠ LỖI #time-greeting-line) */
+#datetime-line {
+    text-align: center;
+    flex-grow: 1; /* Cho phép giãn ra để đẩy 2 bên ra xa */
+}
+
+    /* Đảm bảo logo Zalo không bị vỡ */
+    #header-row-2 .zalo-icon {
+        width: 14px;
+        height: 14px;
+        vertical-align: middle;
+        margin-right: 3px;
+        display: inline;
+    }
+
+    /* Footer */
+    #footer-copyright{ 
+        position:fixed; 
+        left:0; 
+        right:0; 
+        bottom:0; 
+        z-index:9999; 
+        background:rgba(255,255,255,.9); 
+        color:#333; 
+        text-align:center; 
+        padding:4px 0; 
+        font-size:12px; 
+        font-weight:bold; 
+        box-shadow:0 -2px 10px rgba(0,0,0,.1); 
+        font-family:Arial, sans-serif; 
+    }
+
+    /* Main grid */
+    .main-content-container{ 
+    width:95%; max-width:1200px; 
+    display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); 
+    gap:5px; 
+    padding:20px; 
+    border-radius:15px; 
+    background: transparent; 
+    box-shadow: none; 
+    margin: 0px auto 0px; 
+    transition:background .35s; 
+}
+    @media (min-width:600px){ .main-content-container{ grid-template-columns:repeat(2,1fr); max-width:900px; } }
+    @media (min-width:992px){ .main-content-container{ grid-template-columns:repeat(3,1fr); max-width:1200px; } }
+    .main-content-container > *{ width:100%; box-sizing:border-box; }
+
+    /* Menu items */
+    .menu-item-link{ text-decoration:none; display:block; width:100%; box-sizing:border-box; cursor:pointer; }
+    .menu-item{ display:flex; align-items:center; gap:10px; justify-content:center; border-radius:30px; padding:4px; margin:2px 0; width:100%; box-sizing:border-box; cursor:pointer; transition:transform .25s, box-shadow .25s; box-shadow:0 4px 10px rgba(0,0,0,.3); text-align:center; }
+    .menu-item:hover{ transform:translateY(-3px); box-shadow:0 6px 15px rgba(0,0,0,.4); }
+    .menu-icon{ width:50px; height:50px; border-radius:50%; display:flex; align-items:center; justify-content:center; overflow:hidden; box-shadow:0 2px 5px rgba(0,0,0,.2); background:rgba(255,255,255,.8); flex-shrink:0; }
+    .menu-icon img{ width:42px; height:42px; object-fit:contain; transition:transform .3s; }
+    .menu-item:hover .menu-icon img{ transform:scale(1.1); }
+    .menu-text{ flex:1; font-weight:bold; font-size:13px; color:white; padding:6px 8px; border-radius:18px; text-align:center; margin-left:8px; }
+
+    /* dropdown */
+    .dropdown-container{ position:relative; display:block; width:100%; }
+    .dropdown-content{ display:none; position:absolute; left:0; min-width:100%; background:#f9f9f9; border:1px solid #ddd; border-radius:8px; box-shadow:0 8px 16px rgba(0,0,0,.16); z-index:1000; margin-top:5px; overflow:hidden; }
+    .dropdown-container.active .dropdown-content{ display:block; }
+    .dropdown-content a{ display:block; padding:8px 12px; text-decoration:none; color:black; font-size:13px; }
+    .dropdown-content a:hover{ background:#f1f1f1; }
+    .menu-item-with-dropdown{ position:relative; justify-content:center; }
+    .dropdown-arrow{ position:absolute; right:15px; top:50%; transform:translateY(-50%); width:0; height:0; border-left:5px solid transparent; border-right:5px solid transparent; border-top:5px solid white; transition:transform .3s; }
+    .dropdown-container.active .dropdown-arrow{ transform:translateY(-50%) rotate(180deg); }
+
+    /* colors */
+    .color-1{ background:linear-gradient(to right,#00BFFF,#1E90FF); }
+    .color-2{ background:linear-gradient(to right,#FFD700,#FFA500); }
+    .color-3{ background:linear-gradient(to right,#FF4500,#FF6347); }
+    .color-4{ background:linear-gradient(to right,#32CD32,#228B22); }
+    .color-5{ background:linear-gradient(to right,#8A2BE2,#9400D3); }
+    .color-6{ background:linear-gradient(to right,#4682B4,#6495ED); }
+    .color-7{ background:linear-gradient(to right,#FF1493,#FF69B4); }
+    .color-8{ background:linear-gradient(to right,#20B2AA,#008080); }
+    .color-9{ background:linear-gradient(to right,#F08080,#CD5C5C); }
+    .color-10{ background:linear-gradient(to right,#DAA520,#B8860B); }
+    .color-11{ background:linear-gradient(to right,#40E0D0,#20B2AA); }
+    .color-12{ background:linear-gradient(to right,#BDB76B,#808000); }
+    .color-13{ background:linear-gradient(to right,#00C853,#64DD17); }
+    .color-14{ background:linear-gradient(to right,#FF7F50,#6A5ACD); }
+    .color-ai-thcs{ background:linear-gradient(to right,#DC143C,#B22222); }
+    .ai-canbang-color{ background:linear-gradient(to right,#FF00FF,#800080) !important; }
+    .ong-tho-color{ background:linear-gradient(to right,#FF7F50,#FA8072); }
+    .color-skkn{ background:linear-gradient(to right,#3498db,#2980b9); }
+
+    .inline-menu-button{ display:flex; align-items:center; gap:8px; padding:4px; border-radius:30px; font-weight:bold; font-size:13px; text-decoration:none; color:white; width:100%; box-sizing:border-box; border:none; }
+
+ @media (max-width: 600px){
+    /* 1. Xóa padding mặc định trên body để tránh khoảng trống thừa */
+    html, body {
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    
+    #header-row-2 .stats-info { 
+        white-space: nowrap; /* Bắt buộc nội dung không được xuống dòng */
+        overflow: hidden; 
+        width: 100%; 
+        box-sizing: border-box;
+        display: block !important; 
+        text-align: center;
+    }
+    
+    #header-row-2 .stats-info span { 
+        display: inline !important;
+    }
+    
+    /* 2. Điều chỉnh Header cố định */
+    #fixed-header{ 
+        padding:5px; 
+    }
+    
+    #header-row-1{ 
+        flex-direction:column; 
+        align-items:center; 
+        margin-bottom:8px; 
+    }
+    
+    .header-title{ 
+        justify-content:center; 
+        order:2; 
+        width:100%; 
+        margin-bottom:5px; 
+        /* Tối ưu chữ */
+        font-size: 16px; 
+    }
+    
+    #greeting-box{ 
+        order:1; 
+        width:100%; 
+        text-align:center; 
+        padding:0 5px; 
+    }
+    
+    #greeting-box .controls{ 
+        justify-content:center; 
+        flex-wrap:wrap; 
+    }
+    
+    /* ROW 2 - Mobile Layout */
+    #header-row-2{ 
+        display:flex; 
+        flex-direction:column; /* Chuyển về cột trên mobile */
+    }
+    
+    #header-row-2 span{ 
+        display:block; 
+        margin:2px 0; 
+        text-align:center; 
+    }
+
+/* Đưa thống kê và zalo xuống dưới cùng trên mobile (SỬ DỤNG CLASS MỚI) */
+    #header-row-2 .stats-info { order: 3; } /* Thống kê */
+    #header-row-2 .zalo-info { order: 4; } /* Zalo */
+
+    /* 3. ĐIỀU CHỈNH CHẶT CHẼ KHỐI DANH NGÔN */
+    #quote-container {
+        /* Đặt margin-top chỉ bằng chiều cao header, loại bỏ thêm 10px thừa */
+        margin: var(--header-height, 0px) auto 5px !important; 
+        padding: 8px 10px !important;
+        font-size: 14px !important;
+    }
+
+    /* 4. Điều chỉnh Lưới chính */
+    .main-content-container{ 
+        width:95%; 
+        max-width:100%; 
+        padding:10px; 
+        gap:10px; 
+        /* Giảm minmax để chia cột tốt hơn trên màn hình nhỏ */
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    }
+    
+    .menu-item{ 
+        margin:6px 0; 
+    }
+}
+
+    body.light-mode{ background-color:#333 !important; color:#f0f0f0 !important; }
+    body.light-mode #fixed-header{ background-color: rgba(0,0,0,.95) !important; border-bottom-color:#1E90FF; box-shadow:none; }
+    /* ĐÃ XÓA: body.light-mode #visit-popup (Popup cũ) */
+    body.light-mode .custom-dropdown-content{ background:#444; border:1px solid #555; }
+    body.light-mode .custom-dropdown-content a{ color:#f0f0f0; }
+    body.light-mode .footer-fixed{ background:rgba(0,0,0,.8); color:#ccc; }
+    body.light-mode #footer-copyright{
+        background:rgba(0,0,0,1); 
+        color:#ccc; 
+        box-shadow: 0 -2px 10px rgba(255,255,255,0.1); 
+        border-top: 1px solid #444; 
+    }
+    .author-img{ width:140px; height:140px; border-radius:50%; object-fit:cover; border:6px solid #fff; box-shadow:0 0 10px rgba(0,0,0,.4); display:block; margin:6px auto; }
+    img{ max-width:100%; height:auto; display:block; }
+
+/* Khi tắt đèn */
+body.light-mode #fixed-header h1 {
+    color: #FFD700 !important; /* Tiêu đề */
+}
+
+body.light-mode #greeting {
+    color: #FFDD55 !important; /* Xin chào */
+}
+
+/* KHỐI CSS CŨ CỦA ZALO VÀ POPUP ĐÃ ĐƯỢC XÓA BỎ Ở ĐÂY */
+
+/* CSS cho Vùng Danh Ngôn - Màu Sáng (Light Mode) */
+    #quote-container {
+        background-color: #f7f7f7; /* Nền sáng */
+        color: #333; /* Chữ tối */
+        border: 1px solid #ddd;
+    }
+
+    /* Nút Next Danh Ngôn - General Appearance */
+    #next-quote-btn {
+        margin-left: 15px; 
+        width: 32px; /* Lớn hơn */
+        height: 32px;
+        padding: 0;
+        border: none; 
+        border-radius: 50%; /* Vẫn giữ tròn */
+        cursor: pointer;
+        font-size: 20px; /* Cỡ chữ lớn */
+        line-height: 32px; 
+        text-align: center;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.3); /* Tạo chiều sâu */
+        transition: background-color .2s, color .2s, transform .1s, box-shadow .2s;
+        flex-shrink: 0; /* Đảm bảo nút không bị co lại */
+    }
+    
+    /* Hiệu ứng Hover */
+    #next-quote-btn:hover {
+        transform: scale(1.1); /* Lớn hơn một chút khi hover */
+        box-shadow: 0 6px 10px rgba(0,0,0,0.4); 
+    }
+    
+    /* Màu sắc - Light Mode */
+    #next-quote-btn {
+        background-color: #00BFFF; /* Màu xanh nổi bật */
+        color: white; 
+    }
+
+    /* CSS cho Vùng Danh Ngôn - Màu Tối (Dark Mode) */
+    body.light-mode #quote-container {
+        background-color: #2c3e50; 
+        color: #ecf0f1; 
+        border: 1px solid #555;
+    }
+    
+    /* Màu sắc - Dark Mode */
+    body.light-mode #next-quote-btn {
+        background-color: #FFD700; /* Màu vàng tương phản */
+        color: #333; 
+        box-shadow: 0 4px 6px rgba(255,255,255,0.3); /* Bóng đổ sáng hơn */
+    }
+    body.light-mode #next-quote-btn:hover {
+        box-shadow: 0 6px 10px rgba(255,255,255,0.4); 
+    }
+</style>
+</head>
+<body onload="initApp()">
+
+  <!-- FIXED HEADER -->
+  <div id="fixed-header">
+    <div id="header-row-1">
+      <div class="header-title">
+        <h1 id="wave-text">BỘ CÔNG CỤ GIÁO VIÊN - CHUYỂN ĐỔI SỐ</h1>
+      </div>
+
+      <div id="greeting-box">
+        <div class="controls">
+          <a href="quanly_nguoidung.html" id="admin-btn" class="custom-button" style="display:none;font-size:12px;padding:2px 6px;background:#f39c12;">👥 QUẢN LÝ NGƯỜI DÙNG</a>
+
+          <span id="greeting">👋 Xin chào ...</span>
+
+          <button id="toggleLight" onclick="toggleLightMode()" style="padding:2px 6px;background:#FFD700;color:black;border:none;border-radius:6px;font-weight:bold;font-size:12.5px;cursor:pointer;">💡 ĐÈN</button>
+<button onclick="toggleFullscreen()" id="header-fullscreen-btn" style="background:#3498db;color:white;border:none;border-radius:6px;font-weight:bold;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.2);line-height:1;" title="Toàn màn hình">
+             ⛶
+          </button>
+          <button id="logoutBtn" onclick="logout()" style="padding:2px 6px;background:#00BFFF;color:white;border:none;border-radius:6px;font-weight:bold;font-size:12.5px;cursor:pointer;">🚪 Thoát</button>
+        </div>
+      </div>
+    </div>
+
+<div id="header-row-2">
+  <div class="stats-info" style="color:#555;">
+      <span style="color:#e67e22;">Tổng truy cập: <strong id="totalVisits">0</strong></span>
+      | 
+      <span style="color:#2ecc71;">Hôm nay: <strong id="todayVisits">0</strong></span>
+  </div>
+
+  <span id="datetime-line"></span>
+  
+  <a href="https://zalo.me/g/ezelvn418" target="_blank" class="zalo-info" style="text-decoration:none; color:#0068FF;">
+      <span style="background:rgba(0,104,255,0.1); padding:1px 5px; border-radius:4px;">
+        <img src="https://stc-zaloprofile.zdn.vn/pc/v1/images/zalo_sharelogo.png" alt="Zalo" class="zalo-icon"> Nhóm Zalo chat
+      </span>
+  </a>
+</div>
+  </div>
+
+<div id="quote-container" style="
+        width: 95%; 
+        max-width: 1200px; 
+        margin: calc(var(--header-height, 0px) + 10px) auto 10px;
+        padding: 10px 15px; 
+        border-radius: 12px; 
+        text-align: center;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 40px;
+        box-sizing: border-box;
+        font-family: 'Times New Roman', Times, serif;
+        font-size: 16px;
+        font-style: italic;
+        font-weight: bold;
+        transition: background-color .35s, color .35s;
+        ">
+    <span id="quote-text">Đang tải danh ngôn của Bác Hồ...</span>
+    <button id="next-quote-btn" onclick="showNextQuote()">
+        »
+    </button>
+</div>
+
+  <!-- MAIN GRID -->
+  <div class="main-content-container">
+    <!-- (giữ nguyên toàn bộ menu như file gốc) -->
+    <a href="vong_quay_ten.html" class="menu-item-link">
+      <div class="menu-item color-2">
+        <div class="menu-icon"><img src="icon_quay_ten.png" alt="Vòng quay tên"></div>
+        <div class="menu-text">VÒNG QUAY TÊN NGẪU NHIÊN</div>
+      </div>
+    </a>
+
+    <div class="dropdown-container menu-item-link" onclick="toggleDropdown(this)">
+      <div class="menu-item color-1 menu-item-with-dropdown">
+        <div class="menu-icon"><img src="icon_quay_so.png" alt="Vòng quay số" /></div>
+        <div class="menu-text">VÒNG QUAY SỐ MAY MẮN</div>
+        <div class="dropdown-arrow"></div>
+      </div>
+      <div class="dropdown-content">
+        <a href="vong_quay_so.html">Mẫu 1</a>
+        <a href="quayso_v2.html">Mẫu 2</a>
+      </div>
+    </div>
+
+    <a href="Ai_la_trieu_phu.html" class="menu-item-link">
+      <div class="menu-item color-3">
+        <div class="menu-icon"><img src="ALTP.png" alt="Ai là triệu phú"></div>
+        <div class="menu-text">AI LÀ TRIỆU PHÚ - GIÁO DỤC</div>
+      </div>
+    </a>
+
+    <a href="O_Chu_bi_mat.html" class="menu-item-link">
+      <div class="menu-item color-4">
+        <div class="menu-icon"><img src="icon_o_chu_bi_mat.png" alt="Ô chữ bí mật"></div>
+        <div class="menu-text">TRÒ CHƠI TÌM Ô CHỮ BÍ MẬT</div>
+      </div>
+    </a>
+
+    <a href="doan_tu.html" class="menu-item-link">
+      <div class="menu-item color-5">
+        <div class="menu-icon"><img src="doan_tu.png" alt="Suy đoán từ"></div>
+        <div class="menu-text">TRÒ CHƠI ĐOÁN TỪ CÓ NGHĨA</div>
+      </div>
+    </a>
+
+    <a href="O_Chu_tron_tim.html" class="menu-item-link">
+      <div class="menu-item color-6">
+        <div class="menu-icon"><img src="icon_O_Chu_tron_tim.png" alt="Ô chữ trốn tìm"></div>
+        <div class="menu-text">TRÒ CHƠI AI TINH MẮT HƠN</div>
+      </div>
+    </a>
+
+    <a href="giaidoquediem.html" class="menu-item-link">
+      <div class="menu-item color-7">
+        <div class="menu-icon"><img src="quediem.png" alt="Giải đố que diêm"></div>
+        <div class="menu-text">TIỂU HỌC GIẢI ĐỐ QUE DIÊM</div>
+      </div>
+    </a>
+
+    <a href="https://is.gd/ongthoxaytotaiba" class="menu-item-link">
+      <div class="menu-item ong-tho-color">
+        <div class="menu-icon"><span style="font-size:28px;">🐝</span></div>
+        <div class="menu-text">TRÒ CHƠI ONG THỢ XÂY TỔ TÀI BA</div>
+      </div>
+    </a>
+
+    <a href="https://trolyhoctap.streamlit.app/" class="menu-item-link">
+      <div class="menu-item color-ai-thcs">
+        <div class="menu-icon"><span style="font-size:28px;">🎓</span></div>
+        <div class="menu-text">GIA SƯ AI - TRỢ LÝ HỌC TẬP</div>
+      </div>
+    </a>
+
+    <a href="soan_cau_hoi.html" class="menu-item-link">
+      <div class="menu-item color-8">
+        <div class="menu-icon"><img src="icon_soan_cau_hoi.png" alt="Soạn đề"></div>
+        <div class="menu-text">TẠO - XUẤT ĐỀ TRẮC NGHIỆM HTML</div>
+      </div>
+    </a>
+
+    <a href="sukienVN.html" class="menu-item-link">
+      <div class="menu-item color-9">
+        <div class="menu-icon"><img src="ngaynaynamxua.png" alt="Theo dòng lịch sử"></div>
+        <div class="menu-text">THEO DÒNG SỰ KIỆN - LỊCH SỬ VN</div>
+      </div>
+    </a>
+
+    <a href="fx-570VN Plus.html" class="menu-item-link">
+      <div class="menu-item color-10">
+        <div class="menu-icon"><img src="fx570.png" alt="Máy tính Fx570VN Plus"></div>
+        <div class="menu-text">TRA CỨU BẢNG TUẦN HOÀN NTHH</div>
+      </div>
+    </a>
+
+    <a href="34 tinh thanh VN.html" class="menu-item-link">
+      <div class="menu-item color-11">
+        <div class="menu-icon"><img src="vn.png" alt="34 tỉnh thành 2025"></div>
+        <div class="menu-text">TRA CỨU 34 TỈNH THÀNH VIỆT NAM</div>
+      </div>
+    </a>
+
+    <a href="mophong/mophong.html" class="menu-item-link">
+      <div class="menu-item color-12">
+        <div class="menu-icon"><img src="mophong.png" alt="Mô phỏng dạy & học"></div>
+        <div class="menu-text">CÁC MÔ PHỎNG THEO MÔN HỌC</div>
+      </div>
+    </a>
+
+    <a href="100_cau_lenh_AI.html" class="menu-item-link">
+      <div class="menu-item color-13">
+        <div class="menu-icon"><img src="gpt.png" alt="100 câu lệnh chatGPT"></div>
+        <div class="menu-text">100 CÂU LỆNH CHATGPT CHO GV</div>
+      </div>
+    </a>
+
+    <a href="7991/7991.html" class="menu-item-link">
+      <div class="menu-item color-14">
+        <div class="menu-icon"><img src="share.png" alt="TRÍ TUỆ AI TẠO ĐỀ KIỂM TRA 7991"></div>
+        <div class="menu-text">TRÍ TUỆ AI TẠO ĐỀ KIỂM TRA 7991</div>
+      </div>
+    </a>
+
+    <a href="https://soankehoachbaiday.netlify.app/" class="menu-item-link">
+      <div class="menu-item" style="background:linear-gradient(to right,#6A00FF,#9A40FF);">
+        <div class="menu-icon"><img src="icon.ico" alt="Soạn kế hoạch bài dạy"></div>
+        <div class="menu-text">TRỢ LÝ AI - SOẠN KẾ HOẠCH BÀI DẠY</div>
+      </div>
+    </a>
+
+    <a href="Caro.html" class="menu-item-link" id="music-game-btn-wrapper">
+      <div class="menu-item color-12" style="background: linear-gradient(to right,#6A5ACD,#483D8B);">
+        <div class="menu-icon"><span style="font-size:24px;">🎶</span></div>
+        <div class="menu-text">NHẠC & GAME CARO GIẢI TRÍ</div>
+      </div>
+    </a>
+
+    <a href="https://is.gd/canbangpuhh" class="menu-item-link" id="exit-btn-wrapper">
+      <div class="menu-item ai-canbang-color">
+        <div class="menu-icon"><span style="font-size:24px;">🧪</span></div>
+        <div class="menu-text">AI - CÂN BẰNG MỌI PHẢN ỨNG HÓA HỌC</div>
+      </div>
+    </a>
+
+<a href="https://trolyvietskkn.netlify.app/" class="menu-item-link">
+      <div class="menu-item color-skkn">
+        <div class="menu-icon"><span style="font-size:28px;">✍️</span></div>
+        <div class="menu-text">AI TRỢ LÝ HỖ TRỢ VIẾT SKKN</div>
+      </div>
+    </a>
+  </div>
+
+  <!-- COPYRIGHT -->
+  <div id="footer-copyright">
+    <span>© 2025 Phát triển bởi Thầy Mai Thiện Chánh | <span style="font-family:Arial;">📱</span> 0333.289.379</span>
+  </div>
+
+   <!-- POPUP ĐĂNG NHẬP -->
+  <div id="introPopup" style="position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:99999;display:none;align-items:center;justify-content:center;padding:10px;box-sizing:border-box;">
+    <div style="background:#fff;border-radius:16px;padding:20px;max-width:850px;width:100%;box-shadow:0 0 20px rgba(0,0,0,.3);display:flex;gap:20px;flex-wrap:wrap;">
+      <div style="flex:1;min-width:260px;">
+        <h2 style="color:#e91e63;text-align:center;">BỘ CÔNG CỤ HỖ TRỢ GIÁO VIÊN</h2>
+        <p><strong>Siêu phẩm hỗ trợ giảng dạy</strong> dành riêng cho giáo viên thời đại số:</p>
+        <ul style="font-size:13px;padding-left:20px;color:#333;">
+          <li>🎯 Quay số/quay tên Học sinh</li>
+          <li>🧠 Ai là triệu phú – Giáo dục</li>
+          <li>📝 Tạo đề trắc nghiệm nhanh html</li>
+          <li>🔠 Ô chữ trốn tìm – tăng phản xạ</li>
+          <li>💡 Suy đoán từ – rèn từ ngữ</li>
+          <li>🔒 Ô chữ bí mật – phát huy tư duy</li>
+          <li>📖 Theo dòng sự kiện – Lịch sử VN</li>
+          <li>🔍 Bảng tuần hoàn NTHH</li>
+          <li>🎮 Game Caro + nhạc thư giãn</li>
+          <li>✨ Gia sư AI</li>
+          <li>🧠 Nhiều ứng dụng AI khác cho GD ...</li>
+        </ul>
+
+        <div style="text-align:center;margin-top:10px;">
+          <img src="MTC.png" class="author-img" alt="Tác giả" />
+          <p style="margin-top:5px;"><strong style="color:blue;">Tác giả:</strong><br>Mai Thiện Chánh<br>(THCS Đức Phú – Lâm Đồng)</p>
+          <button disabled style="background:gray;color:white;font-weight:bold;font-size:16px;padding:10px 20px;border:none;border-radius:10px;cursor:not-allowed;margin-top:10px;opacity:.6;">🚫 Vui lòng đăng nhập trước</button>
+        </div>
+      </div>
+
+      <div style="flex:1;min-width:260px;background:#f0f8ff;padding:20px;border-radius:12px;">
+        <form onsubmit="handleLogin(event); return false;">
+          <h3 style="text-align:center;color:#e91e63;">🔐 ĐĂNG NHẬP</h3>
+          <label for="nickname">Nickname:</label>
+          <div style="margin-bottom:12px;">
+            <input type="text" id="nickname" autocomplete="off" style="width:350px;padding:8px 10px;border-radius:6px;border:1px solid #ccc;box-sizing:border-box;">
+          </div>
+          <label for="password">Mật khẩu:</label>
+          <div style="position:relative;margin-bottom:12px;">
+            <input type="password" id="password" style="width:300px;padding:8px 36px 8px 10px;border-radius:6px;border:1px solid #ccc;">
+            <button type="button" onclick="togglePassword()" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);border:none;background:none;cursor:pointer;">
+              <svg id="eye-icon" xmlns="http://www.w3.org/2000/svg" height="22" width="22" viewBox="0 0 24 24" fill="#555"><path d="M12 6a9.77 9.77 0 0 0-9.5 6 9.77 9.77 0 0 0 19 0A9.77 9.77 0 0 0 12 6zm0 10a4 4 0 1 1 4-4 4 4 0 0 1-4 4z"/><circle cx="12" cy="12" r="2"/></svg>
+            </button>
+          </div>
+          <div style="text-align:center;margin-top:10px;">
+            <button type="submit" style="width:60%;padding:10px;background:#00BFFF;color:white;border:none;border-radius:8px;font-weight:bold;">ĐĂNG NHẬP</button>
+          </div>
+        </form>
+
+        <div style="text-align:center;margin-top:15px;">
+          <img src="GV.png" alt="Giáo viên" style="max-width:100%;width:360px;display:block;margin:0 auto;">
+        </div>
+
+        <div style="text-align:center;margin-top:15px;font-weight:bold;font-size:15px;
+            color:#ffeb3b;text-shadow:1px 1px 2px #000,0 0 10px #00f;">
+
+  <a href="https://zalo.me/0333289379" target="_blank"
+     style="display:inline-flex; align-items:center; gap:6px; color:#ffeb3b; text-decoration:none;">
+     Liên hệ tác giả nhận nickname 👉
+     <img src="https://stc-zaloprofile.zdn.vn/pc/v1/images/zalo_sharelogo.png"
+          alt="Zalo" width="40" style="display:block;">
+  </a>
+
+</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCRIPTS -->
+  <script>
+    /* Header height */
+    function updateHeaderHeight(){
+      const header = document.getElementById('fixed-header');
+      if(!header) return;
+      const h = header.offsetHeight + 10;
+      document.documentElement.style.setProperty('--header-height', h + 'px');
+    }
+    window.addEventListener('load', updateHeaderHeight);
+    window.addEventListener('resize', updateHeaderHeight);
+
+   /* Datetime + greeting */
+function capNhatHeaderInfo(){
+    const now = new Date();
+    const days = ["Chủ Nhật","Thứ Hai","Thứ Ba","Thứ Tư","Thứ Năm","Thứ Sáu","Thứ Bảy"];
+    const dayName = days[now.getDay()];
+    const day = String(now.getDate()).padStart(2,'0');
+    const month = String(now.getMonth()+1).padStart(2,'0');
+    const year = now.getFullYear();
+    const dateText = `${dayName}, ngày ${day}/${month}/${year}`;
+    const gio = String(now.getHours()).padStart(2,'0');
+    const phut = String(now.getMinutes()).padStart(2,'0');
+    const giay = String(now.getSeconds()).padStart(2,'0');
+    const timeText = `Bây giờ: ${gio}:${phut}:${giay}`;
+    const hourValue = now.getHours();
+    let timeGreetingText = "";
+    if(hourValue < 6) timeGreetingText = "Chúc bạn một ngày mới tràn đầy năng lượng!";
+    else if(hourValue < 9) timeGreetingText = "Chúc bạn buổi sáng làm việc hiệu quả!";
+    else if(hourValue < 11) timeGreetingText = "Chúc bạn hoàn thành tốt các mục tiêu buổi sáng!";
+    else if(hourValue < 13) timeGreetingText = "Chúc bạn có một bữa trưa ngon miệng!";
+    else if(hourValue < 17) timeGreetingText = "Chúc bạn buổi chiều làm việc thật vui vẻ!";
+    else if(hourValue < 18) timeGreetingText = "Chúc bạn chuẩn bị có một buổi tối ấm áp!";
+    else if(hourValue <= 21) timeGreetingText = "Chúc bạn một buổi tối an lành và vui vẻ!";
+    else timeGreetingText = "Khuya rồi đấy, chúc bạn ngủ ngon và mơ đẹp!";
+    
+    const isLightMode = document.body.classList.contains('light-mode');
+    
+    // Màu cho Header Row 2
+    const dateColor = isLightMode ? '#00BFFF' : '#008080';
+    const timeColor = isLightMode ? '#FFD700' : '#d9534f';
+    const greetingColor = isLightMode ? '#FF6347' : '#008ccc';
+    
+    // ⭐ Định nghĩa màu cho khối Thống kê
+    const statsColor = isLightMode ? '#ccc' : '#555'; 
+    
+    // 1. Cập nhật ngày/giờ và lời chúc (GỘP CHUNG MỘT DÒNG)
+    const dateHtml = `<span style="color:${dateColor};font-weight:bold;">${dateText}</span>`;
+    const timeHtml = `<span style="color:${timeColor};font-weight:bold;"> - ${timeText}</span>`;
+    const greetingHtml = `<span style="color:${greetingColor};font-weight:bold;"> ${timeGreetingText}</span>`; 
+    
+    document.getElementById('datetime-line').innerHTML = dateHtml + timeHtml + greetingHtml;
+    
+    // 2. Cập nhật lời chào
+    const greetingEl = document.getElementById('greeting');
+    const loggedInUser = localStorage.getItem('name');
+    greetingEl.textContent = loggedInUser ? `👋 Xin chào ${loggedInUser}` : '👋 Xin chào Quý thầy/cô';
+
+    // 3. Cập nhật màu chữ Thống kê (SỬ DỤNG CLASS MỚI .stats-info)
+    const statsInfoEl = document.querySelector('.stats-info');
+    if(statsInfoEl) statsInfoEl.style.color = statsColor;
+}
+
+    /* Light mode */
+    function updateLightButton(isLight){
+      const btn = document.getElementById('toggleLight');
+      if(!btn) return;
+      if(isLight){ btn.innerHTML = '💡 BẬT ĐÈN'; btn.style.backgroundColor='#00BFFF'; btn.style.color='white'; }
+      else { btn.innerHTML = '🌙 TẮT ĐÈN'; btn.style.backgroundColor='#FFD700'; btn.style.color='black'; }
+    }
+    function toggleLightMode(){
+      document.body.classList.toggle('light-mode');
+      const isLight = document.body.classList.contains('light-mode');
+      localStorage.setItem('lightMode', isLight ? 'enabled' : 'disabled');
+      updateLightButton(isLight);
+      capNhatHeaderInfo();
+    }
+
+    /* Show login popup */
+    function showLoginPopup(){
+      const popup = document.getElementById('introPopup');
+      if(!popup) return;
+      popup.style.display = 'flex';
+      // focus nickname input
+      const nick = document.getElementById('nickname');
+      if(nick){ setTimeout(()=>nick.focus(), 60); }
+    }
+
+    /* Hide login popup */
+    function hideLoginPopup(){
+      const popup = document.getElementById('introPopup');
+      if(!popup) return;
+      popup.style.display = 'none';
+    }
+
+    /* Init app */
+function initApp(){
+    // ⭐ BỔ SUNG: Luôn GHI ĐÈ và KHỞI TẠO TẮT ĐÈN (Dark Mode)
+    localStorage.setItem('lightMode', 'enabled'); 
+    
+    if(localStorage.getItem('lightMode') === 'enabled'){ 
+        document.body.classList.add('light-mode'); 
+        updateLightButton(true); 
+    } else {
+        updateLightButton(false); 
+    }
+    
+    capNhatHeaderInfo();
+    setInterval(capNhatHeaderInfo, 1000);
+    const user = JSON.parse(localStorage.getItem('loggedInUser') || 'null');
+    if(user){
+        const greet = document.getElementById('greeting'); if(greet) greet.textContent = '👋 Xin chào ' + user.name;
+        if(localStorage.getItem('nickname') === 'admin') {
+            const adminBtn = document.getElementById('admin-btn');
+            if(adminBtn) adminBtn.style.display='inline-block';
+        }
+        checkMonthlyLogout();
+        hideLoginPopup();
+    } else {
+        // Nếu chưa đăng nhập -> hiện popup
+        showLoginPopup();
+    }
+    updateHeaderHeight();
+    // minimal event hooks
+    const fsBtn = document.getElementById('fullscreen-btn'); if(fsBtn) fsBtn.addEventListener('click', toggleFullscreen);
+    const loginForm = document.querySelector('#introPopup form'); if(loginForm) loginForm.addEventListener('submit', handleLogin);
+    updateFullscreenButton();
+
+    loadQuotes();
+}
+
+    /* Dropdown helpers */
+    function toggleDropdown(dropdownContainer){
+      const content = dropdownContainer.querySelector('.dropdown-content');
+      const isActive = dropdownContainer.classList.contains('active');
+      document.querySelectorAll('.dropdown-container.active').forEach(open => {
+        if(open !== dropdownContainer){ open.classList.remove('active'); const c = open.querySelector('.dropdown-content'); if(c){ c.style.display='none'; } }
+      });
+      if(!content) return;
+      if(isActive){ dropdownContainer.classList.remove('active'); content.style.display='none'; }
+      else { dropdownContainer.classList.add('active'); content.style.display='block'; }
+    }
+    window.addEventListener('click', function(e){
+      document.querySelectorAll('.dropdown-container').forEach(container => {
+        const content = container.querySelector('.dropdown-content') || container.querySelector('.custom-dropdown-content');
+        if(content && content.style.display === 'block' && !container.contains(e.target)){
+          content.style.display = 'none'; container.classList.remove('active');
+        }
+      });
+    });
+
+    /* Fullscreen */
+    function toggleFullscreen(){
+      if(!document.fullscreenElement) document.documentElement.requestFullscreen().catch(()=>{});
+      else document.exitFullscreen();
+    }
+   function updateFullscreenButton(){
+      // Lấy nút Fullscreen mới trên header
+      const btn = document.getElementById('header-fullscreen-btn'); 
+      if(!btn) return;
+      
+      const isFull = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
+      
+      // Sử dụng biểu tượng mới: 🗗 (Collapse/Exit) và ⛶ (Maximize/Enter)
+      if(isFull){
+        btn.innerHTML = '🗗'; // Biểu tượng Thu nhỏ/Thoát
+        btn.style.backgroundColor = '#e67e22'; // Màu cam
+        btn.title = 'Thoát toàn màn hình';
+      } else {
+        btn.innerHTML = '⛶'; // Biểu tượng Phóng to/Vào
+        btn.style.backgroundColor = '#3498db'; // Màu xanh
+        btn.title = 'Toàn màn hình';
+      }
+    }
+    ["fullscreenchange","webkitfullscreenchange","mozfullscreenchange","MSFullscreenChange"].forEach(evt => document.addEventListener(evt, updateFullscreenButton));
+
+    /* Login / logout / password toggle / monthly logout */
+    async function handleLogin(e){
+      e.preventDefault();
+      const nickname = document.getElementById('nickname').value.trim();
+      const password = document.getElementById('password').value.trim();
+      if(!nickname || !password){ alert('Vui lòng nhập đầy đủ nickname và mật khẩu.'); return; }
+      try {
+        const resp = await fetch('accounts.json'); const accounts = await resp.json();
+        const found = accounts.find(acc => acc.username === nickname && acc.password === password);
+        if(!found){ alert('❌ Sai nickname hoặc mật khẩu.'); return; }
+        alert('✅ Đăng nhập thành công!');
+        localStorage.setItem('authenticated', 'true');
+        localStorage.setItem('nickname', found.username);
+        localStorage.setItem('name', found.name);
+        localStorage.setItem('loggedInUser', JSON.stringify({ name: found.name }));
+        const today = new Date(); localStorage.setItem('lastSuccessfulLoginMonth', `${today.getMonth()}-${today.getFullYear()}`);
+        hideLoginPopup();
+        const greet = document.getElementById('greeting'); if(greet) greet.textContent = '👋 Xin chào ' + found.name;
+        if(found.username === 'admin') { const adminBtn = document.getElementById('admin-btn'); if(adminBtn) adminBtn.style.display='inline-block'; }
+      } catch(err){
+        console.error('Lỗi khi kiểm tra tài khoản:', err); alert('⚠️ Không thể kiểm tra tài khoản. Vui lòng thử lại sau.');
+      }
+    }
+
+    function togglePassword(){
+      const input = document.getElementById('password');
+      const eye = document.getElementById('eye-icon');
+      const isHidden = input.type === 'password';
+      input.type = isHidden ? 'text' : 'password';
+      eye.innerHTML = isHidden ? '<path d="M12 4.5c-6.8 0-11 5.5-11 7.5s4.2 7.5 11 7.5 11-5.5 11-7.5-4.2-7.5-11-7.5zm0 12c-2.8 0-5-2.2-5-5s2.2-5 5-5 5 2.2 5 5-2.2 5-5 5z"/><circle cx="12" cy="12" r="2"/>' : '<path d="M12 6a9.77 9.77 0 0 0-9.5 6 9.77 9.77 0 0 0 19 0A9.77 9.77 0 0 0 12 6zm0 10a4 4 0 1 1 4-4 4 4 0 0 1-4 4z"/><circle cx="12" cy="12" r="2"/>';
+    }
+
+    function logout(){
+      // Xóa thông tin đăng nhập
+      localStorage.removeItem('authenticated');
+      localStorage.removeItem('nickname');
+      localStorage.removeItem('name');
+      localStorage.removeItem('loggedInUser');
+      // hiện popup đăng nhập (không redirect)
+      showLoginPopup();
+      // cập nhật greeting
+      const greet = document.getElementById('greeting'); if(greet) greet.textContent = '👋 Xin chào Quý thầy/cô';
+      // ẩn admin button nếu có
+      const adminBtn = document.getElementById('admin-btn'); if(adminBtn) adminBtn.style.display='none';
+    }
+
+    function checkMonthlyLogout() {
+    const today = new Date();
+    const currentMonthYear = `${today.getMonth()}-${today.getFullYear()}`;
+    const lastMonth = localStorage.getItem('lastSuccessfulLoginMonth');
+
+    // Nếu chưa từng lưu tháng → cho vào nhưng lưu lại tháng
+    if (!lastMonth) {
+        localStorage.setItem('lastSuccessfulLoginMonth', currentMonthYear);
+        return;
+    }
+
+    // Nếu KHÁC tháng → yêu cầu đăng nhập lại 1 lần
+    if (lastMonth !== currentMonthYear) {
+        alert('⚠️ Đã sang tháng mới, vui lòng đăng nhập lại!');
+        localStorage.setItem('lastSuccessfulLoginMonth', currentMonthYear);
+        logout(); // → tự động mở popup đăng nhập
+        return;
+    }
+
+    // Nếu cùng tháng → không làm gì thêm
+}
+
+
+    /* Title rotate */
+    document.addEventListener('DOMContentLoaded', () => {
+      const titleText = "* * * Trang chủ - Bộ công cụ hỗ trợ GD dành cho giáo viên";
+      let i = 0;
+      setInterval(()=>{ document.title = titleText.slice(i) + titleText.slice(0,i); i=(i+1)%titleText.length; }, 300);
+    });
+  </script>
+
+  <!-- Firebase kept -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <script>
+    console.log("👉 Đang tải Firebase...");
+    const firebaseConfig = {
+      apiKey: "AIzaSyA-82b1D1t7uMNLj7JPKou9zCbozzBntMoI",
+      authDomain: "mtcedutech-27414.firebaseapp.com",
+      databaseURL: "https://mtcedutech-27414-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "mtcedutech-27414",
+      storageBucket: "mtcedutech-27414.appspot.com",
+      messagingSenderId: "1059485201084",
+      appId: "1:1059485201084:web:4b9c59c1df144f6ac056b9"
+    };
+    if(typeof firebase === 'undefined') console.error("❌ Firebase chưa được tải!");
+    else {
+      firebase.initializeApp(firebaseConfig);
+      const db = firebase.database();
+      function getTodayKey(){ const d = new Date(); return d.toISOString().split('T')[0]; }
+      async function updateStats(){
+        try{
+          if(!sessionStorage.getItem('visited_this_session')){
+            const totalRef = db.ref("stats/total");
+            const todayRef = db.ref("stats/daily/" + getTodayKey());
+            await totalRef.transaction(n => (n||0)+1).catch(()=>{});
+            await todayRef.transaction(n => (n||0)+1).catch(()=>{});
+            sessionStorage.setItem('visited_this_session','true');
+          }
+          const totalRef = db.ref("stats/total");
+          const todayRef = db.ref("stats/daily/" + getTodayKey());
+          totalRef.on("value", snap => { document.getElementById("totalVisits").textContent = snap.val() || 0; });
+          todayRef.on("value", snap => { document.getElementById("todayVisits").textContent = snap.val() || 0; });
+        } catch(e){ console.error("❌ Lỗi cập nhật thống kê:", e); }
+      }
+      updateStats();
+    }
+  </script>
+<script>
+// Biến toàn cục cho Danh Ngôn
+    let quotes = [];
+    let currentQuoteIndex = 0;
+    let quoteInterval;
+
+    // Hàm tải danh ngôn từ JSON
+    async function loadQuotes() {
+        try {
+            const response = await fetch('danh_ngon_ho_chi_minh.json'); 
+            if (!response.ok) {
+                throw new Error('Lỗi tải file danh_ngon_ho_chi_minh.json');
+            }
+            quotes = await response.json();
+            console.log(`Đã tải thành công ${quotes.length} câu danh ngôn.`);
+            displayQuote(currentQuoteIndex);
+            startQuoteRotation();
+        } catch (error) {
+            console.error("Lỗi khi tải danh ngôn:", error);
+            document.getElementById('quote-text').textContent = '⚠️ Không thể tải danh ngôn của Bác Hồ.';
+        }
+    }
+
+    // Hàm hiển thị câu danh ngôn
+    function displayQuote(index) {
+        const quoteEl = document.getElementById('quote-text');
+        if (quotes.length > 0 && quoteEl) {
+            const quote = quotes[index];
+            quoteEl.textContent = `"${quote.content}" - ${quote.author}`;
+            currentQuoteIndex = index;
+        }
+    }
+
+    // Hàm tự động chuyển câu (10 giây)
+    function startQuoteRotation() {
+        if (quoteInterval) {
+            clearInterval(quoteInterval);
+        }
+        
+        quoteInterval = setInterval(() => {
+            currentQuoteIndex = (currentQuoteIndex + 1) % quotes.length;
+            displayQuote(currentQuoteIndex);
+        }, 10000); // 10 giây
+    }
+
+    // Hàm xem câu tiếp theo khi click nút
+    function showNextQuote() {
+        clearInterval(quoteInterval);
+        currentQuoteIndex = (currentQuoteIndex + 1) % quotes.length;
+        displayQuote(currentQuoteIndex);
+        startQuoteRotation();
+    }
+</script>
+
+</body>
+</html>
