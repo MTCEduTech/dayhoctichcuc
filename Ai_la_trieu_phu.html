@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <script src="auth.js"></script>
+  <title>Ai là triệu phú - Giáo dục</title>
+  <style>
+    .rotating-border {
+    width: 180px;  /* Vòng quay to hơn */
+    height: 180px;
+    border-radius: 50%;
+    margin: 0 auto 20px auto;
+    position: relative;
+  }
+
+    .rotating-border::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: conic-gradient(
+        red, orange, yellow, green, cyan, blue, violet, red
+      );
+      animation: spin 4s linear infinite; /* Viền màu quay */
+      z-index: 1;
+    }
+
+    .rotating-border > img {
+    width: 170px;  /* Logo nhỏ hơn vòng quay */
+    height: 170px;
+    border-radius: 50%;
+    object-fit: cover;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* Căn giữa logo */
+    z-index: 2;
+  }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    body { font-family: sans-serif; background: #000; color: #fff; text-align: center; padding: 20px; }
+    
+    .question-box {
+  background: rgba(0, 0, 0, 0.6); /* Nền mờ trong suốt */
+  border: 3px solid #2196f3;      /* Viền xanh dương đậm */
+  border-radius: 15px;
+  padding: 20px;
+  max-width: 700px;
+  margin: auto;
+  box-shadow: 0 0 15px rgba(0,0,0,0.5);
+}
+
+    #answers button,
+.help button {
+  background-color: rgba(0, 191, 255, 0.6); /* màu xanh nhạt mờ */
+  color: white;
+  backdrop-filter: blur(2px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+#answers button:hover,
+.help button:hover {
+  background-color: rgba(0, 191, 255, 0.8);
+}
+
+    .correct { background: green; }
+    .wrong { background: red; }
+
+    .control button, .control input {
+      margin: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+    }
+
+    .control {
+      margin-bottom: 20px;
+    }
+
+    body {
+      font-family: sans-serif;
+      background: url("anh_nen_truong_hoc.png") no-repeat center center fixed;
+      background-size: cover;
+      color: #fff;
+      text-align: center;
+      padding: 20px;
+    }
+
+    button.reset-btn    { background-color: #ff9800; color: white; }
+    button.import-btn   { background-color: #2196f3; color: white; }
+    button.add-btn      { background-color: #4caf50; color: white; }
+    button.export-btn   { background-color: #9c27b0; color: white; }
+    button.help-btn     { background-color: #00bcd4; color: white; }
+    .correct            { background-color: green !important; }
+    .wrong              { background-color: red !important; }
+
+
+
+.help {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.help button {
+  font-size: 28px;
+  padding: 15px 25px;
+  flex: 1;
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  background-color: #00bcd4;
+  color: white;
+  transition: transform 0.2s, background-color 0.3s;
+}
+
+.help button:hover {
+  background-color: #0097a7;
+  transform: scale(1.05);
+}
+
+
+#question {
+  font-size: 28px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  text-align: center;  /* Căn giữa câu hỏi */
+  width: 100%;  /* Chiếm toàn bộ chiều rộng */
+  box-sizing: border-box;
+}
+
+#answers {
+  display: flex;  /* Dùng flexbox để dãn rộng */
+  justify-content: space-between;  /* Dãn đều các đáp án */
+  gap: 15px;  /* Khoảng cách giữa các đáp án */
+  flex-wrap: wrap;  /* Cho phép các đáp án xuống dòng khi không đủ chỗ */
+  max-width: 900px;  /* Tối đa chiều rộng của phần đáp án */
+  margin: 0 auto;  /* Căn giữa phần đáp án */
+}
+
+#answers button {
+  font-size: 20px;
+  padding: 20px;
+  width: 45%;  /* Đáp án sẽ chiếm 45% chiều rộng */
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  #answers button {
+    width: 100%;  /* Trên màn hình nhỏ, mỗi đáp án sẽ chiếm 100% chiều rộng */
+  }
+}
+
+
+#question-list {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  background: #007bff;
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;  /* Xếp dọc */
+  gap: 5px;
+  max-width: 300px;
+color: white;
+  font-weight: bold;
+  opacity: 1; /* Đảm bảo không bị mờ */
+}
+
+#question-list span {
+  padding: 5px 10px;
+  border-radius: 4px;
+  background-color: #eee;
+  cursor: default;
+}
+#question-list span.active {
+  background-color: orange;
+  color: white;
+}
+#question-list span.correct {
+  background-color: #28a745;
+  color: white;
+}
+#question-list span.incorrect {
+  background-color: red;
+  color: white;
+}
+
+
+
+#clock-container {
+  position: fixed;
+  top: 30px;
+  left: 10px;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-family: monospace;
+  font-size: 16px;
+  z-index: 9999;
+}
+
+.fixed-clock-box {
+    position: fixed;
+  top: 40px;
+  right: 20px;
+  z-index: 1000;
+  background: #fffacd;
+  border: 2px solid #000;
+  padding: 10px;
+  width: 200px;
+  text-align: center;
+  box-shadow: 2px 2px 6px rgba(0,0,0,0.3);
+ 
+}
+.fixed-clock-box .title {
+  font-weight: bold;
+  font-size: 14px;
+  margin-bottom: 5px;
+  color: blue;
+}
+.fixed-clock-box .time-input input {
+  width: 40px;
+  font-size: 16px;
+  text-align: center;
+}
+.fixed-clock-box .label {
+  font-size: 16px;
+  margin-left: 3px;
+  color: blue;
+  font-weight: bold;
+}
+.fixed-clock-box .countdown {
+  background: red;
+  color: white;
+  font-size: 26px;
+  padding: 5px 0;
+  border-radius: 10px;
+  border: 2px solid #333;
+  margin: 6px 0;
+}
+.fixed-clock-box .btn {
+  padding: 4px 8px;
+  font-size: 13px;
+  font-weight: bold;
+  background-color: #007BFF;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+@font-face {
+  font-family: 'MyDigitalFont';
+  src: url('Donghodemnguoc.ttf') format('truetype');
+}
+
+.countdown {
+  font-family: 'MyDigitalFont', monospace;
+  font-size: 48px;
+  color: #0F0;
+  background: #222;
+  padding: 10px 0;
+  border-radius: 10px;
+  border: 2px solid #0F0;
+  text-shadow:
+    0 0 5px #0F0,
+    0 0 20px #0F0,
+    0 0 30px #0F0;
+  letter-spacing: 5px;
+}
+
+  
+.help-btn.used {
+  background-color: red !important;
+  color: black !important;
+  font-weight: bold;
+}
+.result-green {
+  color: green;
+}
+.result-red {
+  color: red;
+}
+
+
+.fade-out {
+  animation: fadeOut 1s ease-out forwards;
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; display: none; }
+}
+#result-box span {
+  font-size: 16px;
+  word-wrap: break-word;
+  text-align: center;
+}
+
+</style>
+  <link rel="stylesheet" href="menu.css">
+</head>
+<body>
+  <h1 style="
+    margin-bottom: 10px; 
+    color: blue;
+    text-shadow: 2px 2px 4px white; 
+    font-size: 32px; 
+    font-family: 'Times New Roman', Times, serif; 
+    font-weight: bold; 
+    text-align: center;">
+  🎓 TRÒ CHƠI KIẾN THỨC - TÌM KIẾM: <br/> 
+  <span style="font-weight:bold;">AI LÀ "TRIỆU PHÚ TRI THỨC"</span>
+</h1>
+
+
+<div class="rotating-border">
+  <img src="ALTP.png" alt="logo" />
+</div>
+  
+<div style="display: flex; justify-content: center; gap: 30px;">
+  <div id="question-list" style="width: 200px; text-align: left;">
+    <!-- Danh sách câu hỏi sẽ được render ở đây -->
+  </div>
+
+
+  <div class="question-box">
+    <div id="question">Câu hỏi sẽ hiển thị tại đây</div>
+    <div id="answers"></div>
+    <div class="help">
+  <button class="help-btn" onclick="use5050()">50:50</button>
+  <button class="help-btn" onclick="useHint()">Gợi ý</button>
+  <button class="help-btn" onclick="skipQuestion()">Bỏ qua</button>
+</div>
+
+    <div id="hint"></div>
+    <div id="status"></div>
+  
+<!-- KQ LỰA CHỌN -->
+<div id="result-box" style="
+  position: fixed;
+  top: 220px;
+  right: 20px;
+  width: 220px;
+  height: 110px;
+  background: white;
+  color: black;
+  border: 3px solid red;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.4);
+  display: none;
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 10px;
+  box-sizing: border-box;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  white-space: normal;
+"></div>
+
+<!-- Gợi ý -->
+<div id="hint-box" style="
+  position: fixed;
+  top: 350px;
+  right: 20px;
+  width: 220px;
+  height: 110px;
+  background: white;
+  color: blue;
+  border: 3px solid #2196f3;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.4);
+  display: none;
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 10px;
+  box-sizing: border-box;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  white-space: normal;
+"></div>
+
+
+  <audio id="sound-correct" src="correct.mp3"></audio>
+  <audio id="sound-wrong" src="wrong.mp3"></audio>
+  <audio id="sound-win" src="win.mp3"></audio>
+
+  <div class="fixed-clock-box">
+  <div class="title">TIMES SUY NGHĨ & TRẢ LỜI</div>
+  <div class="time-input">
+    <input type="number" id="timeInput" min="5" max="600" step="5" value="30">
+    <span class="label">GIÂY</span>
+  </div>
+  <div class="countdown" id="countdownDisplay">00 : 00</div>
+  <button class="btn" onclick="startCountdown(() => {
+    if (pendingRowToLock) {
+      if (!answeredCorrectly[pendingRowToLock.rowIndex]) {
+        lockRow(pendingRowToLock.rowInputs);
+      }
+      pendingRowToLock = null;
+    }
+  })">BẮT ĐẦU</button>
+
+  <audio id="alarmSound" src="chuong.mp3" preload="auto"></audio>
+</div>
+
+  
+<script>
+let questions = [];
+let importedQuestions = [];
+let current = 0;
+let used5050 = false, usedHint = false, usedSkip = false;
+let questionStatus = []; // Mảng lưu trạng thái của từng câu hỏi: 'unanswered', 'correct', 'incorrect'
+
+function loadQuestion() {
+  document.getElementById("hint-box").style.display = "none";
+  document.getElementById("hint-box").textContent = "";
+renderQuestionList();  
+document.getElementById("hint").textContent = "";
+  const q = questions[current];
+  document.getElementById("question").textContent = q.question;
+  const answersDiv = document.getElementById("answers");
+  answersDiv.innerHTML = "";
+  q.answers.forEach((ans, idx) => {
+    const btn = document.createElement("button");
+    btn.textContent = String.fromCharCode(65 + idx) + ". " + ans;
+    btn.onclick = () => checkAnswer(idx, btn);
+    answersDiv.appendChild(btn);
+  });
+  document.getElementById("status").textContent = "";
+}
+
+function checkAnswer(index, button) {
+  const correct = questions[current].correct;
+  const buttons = document.querySelectorAll("#answers button");
+
+  if (index === correct) {
+  button.classList.add("correct");
+  document.querySelector("#q-item-" + current).classList.remove("active");
+  document.querySelector("#q-item-" + current).classList.add("correct");
+questionStatus[current] = "correct";
+
+    const bgm = document.getElementById("background-music");
+const correctSound = document.getElementById("sound-correct");
+
+// Tạm dừng nhạc nền
+bgm.pause();
+
+// Phát âm thanh đúng
+correctSound.play();
+
+// Khi âm thanh kết thúc thì phát lại nhạc nền
+correctSound.onended = function () {
+  bgm.play();
+};
+
+    const resultBox = document.getElementById("result-box");
+resultBox.innerHTML = '<span class="result-green">✅ Đúng rồi!</span>';
+resultBox.style.opacity = "1";
+resultBox.classList.remove("fade-out");
+resultBox.style.display = "flex";
+setTimeout(() => {
+  resultBox.classList.add("fade-out");
+  setTimeout(() => {
+    resultBox.style.display = "none";
+    resultBox.classList.remove("fade-out");
+    resultBox.style.opacity = "1";
+  }, 1000);
+}, 7000);
+    setTimeout(() => {
+      current++;
+      if (current < questions.length) {
+        
+      loadQuestion();
+      } else {
+        document.getElementById("sound-win").play();
+        document.getElementById("question").textContent = "🎉 Chúc mừng! Bạn đã thắng!";
+        document.getElementById("answers").innerHTML = "";
+      }
+    }, 1000);
+  } else {
+    button.classList.add("wrong");
+    document.querySelectorAll("#answers button")[correct].classList.add("correct");
+
+document.querySelector("#q-item-" + current).classList.remove("active");
+  document.querySelector("#q-item-" + current).classList.add("incorrect");
+questionStatus[current] = "incorrect";
+
+const bgm = document.getElementById("background-music");
+const wrongSound = document.getElementById("sound-wrong");
+
+bgm.pause();
+wrongSound.play();
+wrongSound.onended = function () {
+  bgm.play();
+};
+
+    const resultBox = document.getElementById("result-box");
+resultBox.innerHTML = '<span class="result-red">❌ Sai rồi! Kết thúc trò chơi.</span>';
+resultBox.style.opacity = "1";
+resultBox.classList.remove("fade-out");
+resultBox.style.display = "flex";
+setTimeout(() => {
+  resultBox.classList.add("fade-out");
+  setTimeout(() => {
+    resultBox.style.display = "none";
+    resultBox.classList.remove("fade-out");
+    resultBox.style.opacity = "1";
+  }, 1000);
+}, 7000);
+    buttons.forEach(b => b.disabled = true);
+  }
+}
+
+function use5050() {
+  if (used5050) return;
+  used5050 = true;
+  document.querySelector('.help button:nth-child(1)').classList.add('used');
+  const correct = questions[current].correct;
+  let removed = 0;
+  const buttons = document.querySelectorAll("#answers button");
+  for (let i = 0; i < buttons.length; i++) {
+    if (i !== correct && removed < 2) {
+      buttons[i].style.visibility = "hidden";
+      removed++;
+    }
+  }
+}
+
+function useHint() {
+  if (usedHint) return;
+  usedHint = true;
+  document.querySelector('.help button:nth-child(2)').classList.add('used');
+  const hint = questions[current].hint;
+  if (hint) {
+    document.getElementById("hint-box").textContent = hint;
+document.getElementById("hint-box").style.display = "flex";
+  }
+else {
+  document.getElementById("hint-box").textContent = "Không có gợi ý.";
+document.getElementById("hint-box").style.display = "flex";
+}
+}
+
+function skipQuestion() {
+  if (usedSkip) return;
+  usedSkip = true;
+  document.querySelector('.help button:nth-child(3)').classList.add('used');
+  current++;
+  if (current < questions.length) 
+  loadQuestion();
+  else {
+    document.getElementById("question").textContent = "🎉 Bạn đã kết thúc trò chơi!";
+    document.getElementById("answers").innerHTML = "";
+  }
+}
+
+function shuffleArray(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+}
+
+window.onload = function () {
+  document.getElementById('fileInput').addEventListener('change', function (event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      const content = e.target.result;
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(content, 'text/html');
+      const paragraphs = doc.querySelectorAll("p");
+const blocks = Array.from(paragraphs).map(p => p.innerText.trim()).filter(t => t.startsWith("Câu hỏi:"));
+
+
+      importedQuestions = blocks.map(block => {
+        const lines = block.trim().split(/\n/).map(line => line.trim()).filter(l => l);
+        const q = lines[0].replace("Câu hỏi:", "").trim();
+        const answers = [];
+        let correctIndex = -1;
+        let hint = "";
+
+        lines.slice(1).forEach(line => {
+          if (line.startsWith("Đáp án đúng:")) {
+            correctIndex = answers.length;
+            answers.push(line.replace("Đáp án đúng:", "").trim());
+          } else if (line.startsWith("Đáp án sai:")) {
+            answers.push(line.replace("Đáp án sai:", "").trim());
+          } else if (line.startsWith("Gợi ý:")) {
+            hint = line.replace("Gợi ý:", "").trim();
+          }
+        });
+
+        return { question: q, answers, correct: correctIndex, hint };
+      });
+
+      console.log("Imported Questions:", importedQuestions);
+
+      importedQuestions.forEach(q => {
+        const correctAnswer = q.answers[q.correct];
+        const shuffledAnswers = [...q.answers];
+        shuffleArray(shuffledAnswers);
+        q.correct = shuffledAnswers.indexOf(correctAnswer);
+        q.answers = shuffledAnswers;
+      });
+
+      shuffleArray(importedQuestions);
+      questions = importedQuestions;
+renderQuestionList();
+
+      current = 0;
+      used5050 = false;
+      usedHint = false;
+      usedSkip = false;
+      loadQuestion();
+    };
+
+    reader.readAsText(file);
+  });
+};
+</script>
+<div style="
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+">
+  <button id="fullscreen-btn" onclick="toggleFullscreen()" style="
+    background-color: #3498db;
+    color: white;
+    font-weight: bold;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    width: 220px;
+    display: block;
+transition: background-color 0.3s ease;
+  ">
+    📱 FULL MÀN HÌNH
+  </button>
+</div>
+<script>
+/* Toggle fullscreen (dựng theo English.html) */
+function toggleFullscreen() {
+    const docElm = document.documentElement;
+
+    // Nếu đang fullscreen -> thoát
+    if (document.fullscreenElement || document.webkitIsFullScreen || document.mozFullScreen || document.msFullscreenElement) {
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+        } else if (document.mozCancelFullScreen) { // Firefox
+            document.mozCancelFullScreen();
+        } else if (document.webkitExitFullscreen) { // Chrome, Safari, Opera
+            document.webkitExitFullscreen();
+        } else if (document.msExitFullscreen) { // IE/Edge
+            document.msExitFullscreen();
+        }
+    } else {
+        // Vào fullscreen
+        if (docElm.requestFullscreen) {
+            docElm.requestFullscreen();
+        } else if (docElm.mozRequestFullScreen) { // Firefox
+            docElm.mozRequestFullScreen();
+        } else if (docElm.webkitRequestFullscreen) { // Chrome, Safari and Opera
+            docElm.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
+        } else if (docElm.msRequestFullscreen) { // IE/Edge
+            docElm.msRequestFullscreen();
+        }
+    }
+}
+
+/* Cập nhật nhãn nút khi trạng thái fullscreen thay đổi (nhấn ESC) */
+function updateFullscreenButton() {
+    const fullscreenBtn = document.getElementById('fullscreen-btn');
+    if (!fullscreenBtn) return;
+
+    const isFullscreen = document.fullscreenElement || document.webkitIsFullScreen || document.mozFullScreen || document.msFullscreenElement;
+
+    if (isFullscreen) {
+        fullscreenBtn.innerHTML = '❌ FULL MÀN HÌNH';
+        fullscreenBtn.style.backgroundColor = '#e67e22'; // màu khi đang fullscreen
+    } else {
+        fullscreenBtn.innerHTML = '📱 FULL MÀN HÌNH';
+        fullscreenBtn.style.backgroundColor = '#3498db'; // màu khi chưa fullscreen
+    }
+}
+
+/* Lắng nghe sự kiện thay đổi fullscreen (kèm các tiền tố cho trình duyệt) */
+document.addEventListener('fullscreenchange', updateFullscreenButton);
+document.addEventListener('webkitfullscreenchange', updateFullscreenButton);
+document.addEventListener('mozfullscreenchange', updateFullscreenButton);
+document.addEventListener('MSFullscreenChange', updateFullscreenButton);
+
+/* Khởi tạo trạng thái nút (nếu trang load mà đang fullscreen) */
+document.addEventListener('DOMContentLoaded', updateFullscreenButton);
+</script>
+
+<script>
+window.addEventListener("click", function () {
+  const bgm = document.getElementById("background-music");
+  if (bgm.paused) {
+    bgm.play().catch((e) => {
+      console.log("Không thể tự động phát nhạc:", e);
+    });
+  }
+}, { once: true });
+
+
+
+function renderQuestionList() {
+  const listDiv = document.getElementById("question-list");
+  listDiv.innerHTML = "";
+
+  questions.forEach((q, idx) => {
+    const item = document.createElement("span");
+    item.id = "q-item-" + idx;
+    item.textContent = "Câu " + (idx + 1);
+
+    // Giữ lại trạng thái đúng/sai nếu đã được đánh dấu trước đó
+    const oldItem = document.getElementById("q-item-" + idx);
+   if (questionStatus[idx] === "correct") {
+  item.classList.add("correct");
+} else if (questionStatus[idx] === "incorrect") {
+  item.classList.add("incorrect");
+}
+
+
+    // Gán class active cho câu hiện tại
+    if (idx === current) {
+      item.classList.add("active");
+    }
+
+    listDiv.appendChild(item);
+  });
+}
+
+  function startCountdown(callback) {
+  let duration = parseInt(document.getElementById("timeInput").value);
+  const display = document.getElementById("countdownDisplay");
+  const alarm = document.getElementById("alarmSound");
+
+  let timer = duration;
+  updateDisplay(timer);
+
+  const interval = setInterval(() => {
+    timer--;
+    updateDisplay(timer);
+
+    if (timer <= 0) {
+      clearInterval(interval);
+      alarm.play();
+      if (typeof callback === 'function') callback();
+    }
+  }, 1000);
+}
+
+function updateDisplay(seconds) {
+  const minutes = String(Math.floor(seconds / 60)).padStart(2, "0");
+  const secs = String(seconds % 60).padStart(2, "0");
+  document.getElementById("countdownDisplay").textContent = `${minutes} : ${secs}`;
+}
+
+</script>
+
+<div style="
+  position: fixed;
+  bottom: 10px;
+  right: 20px;
+  z-index: 1001;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-end;
+">
+  <!-- Thêm nút SOẠN CÂU HỎI lên trên 3 nút khác -->
+  <button onclick="window.location.href='Soan_De_ALTP.html'" style="
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    width: 220px;
+font-weight: bold;
+  ">
+    ✍️ SOẠN CÂU HỎI
+  </button>
+
+  <input type="file" id="fileInput" style="display: none;" />
+  <label for="fileInput" style="
+    background-color: #2196f3;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    width: 190px;
+    text-align: center;
+font-weight: bold;
+  ">📥 MỞ ĐỀ ALTP</label>
+
+  <button class="reset-btn" onclick="window.location.reload()" style="
+    background-color: #ff9800;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    width: 220px;
+font-weight: bold;
+  ">🔄 RESET</button>
+
+  <button onclick="window.location.href='index.html'" style="
+    background-color: red;
+    color: white;
+    font-weight: bold;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    width: 220px;
+  ">
+    🏠 VỀ TRANG CHỦ
+  </button>
+</div>
+
+
+
+<audio id="background-music" src="NhacnenALTP.mp3" autoplay loop></audio>
+
+<!-- Nút cố định có thể kéo -->
+<button class="menu-toggle draggable"><img src="TC.png" alt="Menu" class="menu-icon"></button>
+<!-- Overlay -->
+<div id="overlay" class="overlay"></div>
+<!-- Menu -->
+<div id="sideMenu" class="side-menu">
+<a href="index.html">🏠 Trang chủ</a>
+  <a href="vong_quay_so.html">🎯 Vòng quay số</a>
+  <a href="vong_quay_ten.html">👥 Vòng quay tên</a>
+  <a href="Ai_la_trieu_phu.html">💰 Ai là triệu phú</a>
+  <a href="O_Chu_bi_mat.html">🧩 Tìm Ô chữ bí mật</a>
+  <a href="O_Chu_tron_tim.html">🔍 Tinh mắt tìm từ</a>
+  <a href="doan_tu.html">🔤 Game suy đoán từ</a>
+  <a href="soan_cau_hoi.html">📝 Soạn đề TN Tick chọn + chấm điểm</a> 
+  <a href="sukienVN.html">📖 Theo dòng sự kiện - lịch sử VN</a> 
+  <a href="fx-570VN%20Plus.html">📟 Giả lập Fx-570 + Bảng tuần hoàn NTHH</a>
+  <a href="Caro.html">🎮 Game Caro + Music</a>
+  <a href="#" onclick="toggleMenu()">❌ Đóng Menu</a>
+
+</div>
+
+<script src="menu.js"></script>
+
+    
+<script src="chao_name.js"></script>
+
+</body>
+</html>

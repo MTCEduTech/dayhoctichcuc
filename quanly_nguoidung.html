@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="auth.js"></script>
+  <title>Quản lý tài khoản người dùng</title>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+    input[type="text"] { width: 95%; }
+    .search-box { margin-bottom: 10px; }
+
+    .password-container {
+      position: relative;
+      display: inline-block;
+      width: 85%;
+    }
+    .password-container input {
+      width: 100%;
+      padding-right: 25px;
+    }
+    .password-container .toggle-eye {
+      position: absolute;
+      right: 5px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .nickname-container {
+      position: relative;
+      display: inline-block;
+      width: 80%;
+    }
+    .nickname-container input {
+      width: 100%;
+      padding-right: 35px;
+    }
+    .nickname-container .confirm-btn {
+      position: absolute;
+      right: 5px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: #28a745;
+      color: white;
+      border: none;
+      padding: 2px 6px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .page-title {
+      text-align: center;
+      font-size: 28px;
+      color: #007acc;
+      text-shadow: 1px 1px 2px #ccc;
+      border-bottom: 3px solid #007acc;
+      padding-bottom: 10px;
+      margin-bottom: 20px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+  </style>
+</head>
+<body>
+  <h2 class="page-title">ADMIN QUẢN LÝ TÀI KHOẢN NGƯỜI DÙNG</h2>
+
+  <div class="search-box">
+    <input type="text" id="searchInput" placeholder="Tìm nickname..." onkeyup="searchTable()" />
+    <button onclick="addRow()">➕ Thêm tài khoản</button>
+    <button onclick="downloadJSON()">💾 Lưu</button>
+  </div>
+
+  <table id="accountTable">
+    <thead>
+      <tr>
+        <th>STT</th>
+        <th>Nickname</th>
+        <th>Mật khẩu</th>
+        <th>Tên hiển thị</th>
+        <th>Hành động</th>
+      </tr>
+    </thead>
+    <tbody>
+    </tbody>
+  </table>
+
+<script>
+  let data = [];
+
+  // ⭐ HÀM KIỂM TRA QUYỀN TRUY CẬP (THAY THẾ CODE GÂY LỖI CỦA BẠN)
+  // Hàm này chạy trước khi loadAccounts được gọi
+  function checkAdminAccess() {
+    // Chúng ta chỉ cần kiểm tra 'nickname' (hoặc 'username' nếu bạn lưu bằng khóa đó)
+    // Tên đăng nhập được lưu là 'nickname' trong index.html
+    const user = localStorage.getItem('nickname')?.trim(); 
+    // const name = localStorage.getItem('name')?.trim(); // KHÔNG cần thiết, dễ gây lỗi
+
+    // Dùng toán tử != hoặc === để kiểm tra tên đăng nhập.
+    // Nếu username KHÔNG PHẢI là 'admin', thì chặn.
+    if (user !== 'admin') {
+      alert('⛔ Bạn không có quyền truy cập trang này!');
+      window.location.href = 'index.html';
+      return false; // Ngăn không cho tiếp tục tải dữ liệu
+    }
+    
+    // Bỏ ẩn body (nếu bạn đã dùng CSS display:none; trong <style>)
+    document.body.style.display = ''; 
+    return true;
+  }
+  
+  // ⭐ HÀM TẢI DỮ LIỆU (CÓ THÊM XỬ LÝ LỖI FETCH)
+  async function loadAccounts() {
+    // 1. Kiểm tra quyền truy cập trước
+    if (!checkAdminAccess()) {
+        return; // Dừng nếu không phải Admin
+    }
+
+    // 2. Tải dữ liệu JSON
+    try {
+      const response = await fetch('accounts.json');
+      if (!response.ok) {
+        // Cần chạy qua Local Server để fetch hoạt động
+        throw new Error('Lỗi bảo mật trình duyệt. Vui lòng CHẠY FILE QUA LOCAL SERVER (ví dụ: Live Server).');
+      }
+
+      const json = await response.json();
+
+      // 3. Kiểm tra và ưu tiên dữ liệu đã lưu tạm (savedAccounts)
+      const saved = localStorage.getItem("savedAccounts");
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed)) {
+            data = parsed;
+          } else {
+            data = json;
+          }
+        } catch (e) {
+            console.warn("Lỗi phân tích savedAccounts, dùng dữ liệu từ file accounts.json.");
+            data = json;
+        }
+      } else {
+        data = json;
+      }
+
+      renderTable();
+    } catch (error) {
+      console.error("Lỗi khi tải accounts.json:", error);
+      alert(`⚠️ LỖI TẢI FILE: ${error.message}`);
+      // Hiện bảng trống nếu không tải được để Admin vẫn có thể làm việc
+      renderTable(); 
+    }
+  }
+
+  // Bổ sung: Hàm khởi tạo ban đầu để đảm bảo body ẩn trước khi kiểm tra
+  function initPage() {
+    // Đảm bảo body ẩn ngay lập tức (nếu bạn thêm style {display:none} vào body)
+    // Nếu bạn không có style này, hãy bỏ qua.
+    const bodyEl = document.body;
+    if (bodyEl && bodyEl.style.display !== 'none') {
+        bodyEl.style.display = 'none'; 
+    }
+    loadAccounts();
+  }
+
+  // ⭐ CÁC HÀM PHỤ TRỢ (GIỮ NGUYÊN HOẶC TỐI ƯU HÓA) ⭐
+
+  function renderTable() {
+    const tbody = document.querySelector('#accountTable tbody');
+    tbody.innerHTML = '';
+    
+    // Cần đảm bảo data là mảng trước khi lặp
+    if (!Array.isArray(data)) return; 
+    
+    data.forEach((acc, i) => {
+      const row = document.createElement('tr');
+      // Thêm cột # (i+1)
+      row.innerHTML = `
+        <td>${i + 1}</td>
+        <td>
+          <div class="nickname-container">
+            <input type="text" value="${acc.username || ''}" class="username" id="user${i}" onchange="updateDataFromInputs()" />
+            <button class="btn-action btn-generate" onclick="generatePassword(${i})">🔑 Random Pass</button>
+          </div>
+        </td>
+        <td>
+          <div class="password-container">
+            <input type="password" value="${acc.password || ''}" class="password" id="pwd${i}" onchange="updateDataFromInputs()" />
+            <button class="toggle-eye" onclick="togglePassword(this)" title="Hiện/Ẩn mật khẩu">👁️</button>
+          </div>
+        </td>
+        <td><input type="text" value="${acc.name || ''}" class="name" onchange="updateDataFromInputs()" /></td>
+        <td><button class="btn-action btn-remove" onclick="removeRow(${i})">🗑️ Xoá</button></td>
+      `;
+      tbody.appendChild(row);
+    });
+  }
+
+  function togglePassword(button) {
+    const pwdInput = button.previousElementSibling;
+    pwdInput.type = pwdInput.type === "password" ? "text" : "password";
+    button.textContent = pwdInput.type === "password" ? '👁️' : '🔒';
+  }
+
+  function generatePassword(index) {
+    // Hàm này bị lỗi tham chiếu ID. Cần sửa lại logic hoặc dùng row.querySelector.
+    const row = document.querySelector(`#accountTable tbody tr:nth-child(${index + 1})`);
+    if (!row) return;
+
+    const passwordInput = row.querySelector('.password');
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+';
+    let password = '';
+    for (let i = 0; i < 12; i++) {
+      password += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    
+    passwordInput.value = password;
+    updateDataFromInputs(); // Cập nhật vào data
+    alert('Mật khẩu mới đã được tạo và điền vào ô.');
+  }
+
+
+  function updateDataFromInputs() {
+    const rows = document.querySelectorAll("#accountTable tbody tr");
+    data = []; // Reset data
+    rows.forEach(row => {
+      const usernameInput = row.querySelector(".username");
+      const passwordInput = row.querySelector(".password");
+      const nameInput = row.querySelector(".name");
+      
+      if (usernameInput && passwordInput && nameInput) {
+        data.push({
+          username: usernameInput.value.trim(),
+          password: passwordInput.value.trim(),
+          name: nameInput.value.trim()
+        });
+      }
+    });
+  }
+
+  function addRow() {
+    updateDataFromInputs();
+    data.push({ username: '', password: '', name: '' });
+    renderTable();
+  }
+
+  function removeRow(index) {
+    if (confirm(`Bạn có chắc chắn muốn xóa dòng ${index + 1} không?`)) {
+      updateDataFromInputs();
+      data.splice(index, 1);
+      renderTable();
+    }
+  }
+
+  function searchTable() {
+    const keyword = document.getElementById("searchInput").value.toLowerCase();
+    const rows = document.querySelectorAll("#accountTable tbody tr");
+    rows.forEach(row => {
+      const username = row.querySelector(".username").value.toLowerCase();
+      row.style.display = username.includes(keyword) ? "" : "none";
+    });
+  }
+
+  function downloadJSON() {
+    updateDataFromInputs();
+
+    const json = JSON.stringify(data, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'accounts.json'; 
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    localStorage.setItem("savedAccounts", JSON.stringify(data));
+    alert('💾 Dữ liệu đã được tải xuống và lưu tạm trong trình duyệt!');
+  }
+
+  // Cho phép gọi từ HTML onclick
+  window.togglePassword = togglePassword;
+  window.generatePassword = generatePassword;
+  window.addRow = addRow;
+  window.removeRow = removeRow;
+  window.searchTable = searchTable;
+  window.downloadJSON = downloadJSON;
+
+  // Gọi hàm khởi tạo khi trang tải xong
+  window.onload = initPage; 
+</script>
+
+
+  <div style="position: fixed; bottom: 20px; right: 20px; z-index: 1001;">
+    <button onclick="window.location.href='index.html'" style="background-color: red; color: white; font-weight: bold; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer;">
+      🏠 VỀ TRANG CHỦ
+    </button>
+  </div>
+<script src="chao_name.js"></script>
+</body>
+</html>

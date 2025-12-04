@@ -1,0 +1,42 @@
+[
+  {
+    "username": "admin",
+    "password": "mtc$",
+    "name": "Tác giả: Mai Thiện Chánh"
+  },
+  {
+    "username": "phuocdien",
+    "password": "Phuocdien@6789",
+    "name": "Thầy giáo Châu Hải Phước Điền"
+  },
+  {
+    "username": "nttphuong",
+    "password": "Phuong@03122025",
+    "name": "Cô giáo Nguyễn Thị Thanh Phương"
+  },
+  {
+    "username": "mylinh",
+    "password": "Mylinh@1985",
+    "name": "Cô giáo Nguyễn Thị Mỹ Linh"
+  },
+  {
+    "username": "vttnhan",
+    "password": "Nhan@23112025",
+    "name": "Cô giáo Vũ Thị Thanh Nhàn"
+  },
+  {
+    "username": "ntmaitrang",
+    "password": "Trang@01122025",
+    "name": "Cô giáo Nguyễn Thị Mai Trang"
+  },
+  {
+    "username": "dothilyna",
+    "password": "LyNa@02122025",
+    "name": "Cô giáo Đỗ Thị Ly Na"
+  },
+  {
+    "username": "team.khtn.tc",
+    "password": "Khtn.tc@2526",
+    "name": "Team học tập KHOA HỌC TỰ NHIÊN - MTC"
+  }
+]

@@ -1,0 +1,812 @@
+<!-- BẮT ĐẦU -->
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+<script src="auth.js"></script>
+  <title>Trò chơi mảnh ghép chữ cái</title>
+  <style>
+   body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    padding: 10px;
+
+    background-image: url('Nen2.jpg');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+  }
+    h1 {
+      color: yellow;
+      margin-bottom: 20px;
+      font-family: "Times New Roman", Times, serif;
+    }
+    #inputArea, #controlArea {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+color: #FFD700;
+font-weight: bold;
+    }
+    #slots, #letters {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      min-height: 60px;
+      margin-bottom: 20px;
+    }
+    .slot, .letter {
+      width: 50px;
+      height: 50px;
+      font-size: 24px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px dashed #999;
+      background-color: #f0f0f0;
+      cursor: pointer;
+      user-select: none;
+    }
+    .letter {
+      border: 2px solid #009688;
+      background-color: #E0F2F1;
+    }
+    .correct {
+      border-color: green;
+      background-color: #C8E6C9;
+    }
+    .incorrect {
+      border-color: red;
+      background-color: #FFCDD2;
+    }
+    button {
+      margin: 5px 5px;
+      padding: 6px 15px;
+      font-size: 16px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+    }
+    button:hover {
+      background-color: #388E3C;
+    }
+    select {
+      font-size: 16px;
+      margin-left: 10px;
+    }
+    #timer {
+      font-size: 18px;
+      margin-top: 10px;
+      color: red;
+      font-weight: bold;
+      font-family: "Times New Roman", Times, serif;
+    }
+    #infoArea {
+      font-size: 20px;
+      margin-top: 10px;
+      font-family: "Times New Roman", Times, serif;
+    }
+    #infoArea em {
+      color: blue;
+      font-weight: bold;
+      font-style: normal;
+    }
+
+ button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.word-button-blink {
+  animation: blink 1s infinite;
+}
+
+.blink-alert {
+  animation: blink 1s infinite;
+  font-size: 20px;
+  font-weight: bold;
+  padding: 10px;
+  border-radius: 8px;
+  margin-top: 15px;
+}
+
+  </style>
+
+<link rel="stylesheet" href="menu.css">
+</head>
+<body>
+  <h1>TRÒ CHƠI SẮP XẾP KÝ TỰ THÀNH TỪ HOÀN CHỈNH</h1>
+
+  <div id="inputArea">
+    <input id="answerInput" placeholder="Nhập đáp án từ cần tìm đúng" size="25" />
+    <input id="hintInput" placeholder="Nhập gợi ý cho từ" size="30" />
+   
+<button onclick="hideInput()">ẨN KHUNG NHẬP</button>
+<label for="scoreSelect">Thang điểm/từ:</label>
+  <select id="scoreSelect" name="scoreSelect">
+    <option value="">--Chọn--</option>
+    <option value="1">1</option>
+    <option value="2">2</option>
+    <option value="3">3</option>
+    <option value="4">4</option>
+    <option value="5">5</option>
+    <option value="6">6</option>
+    <option value="7">7</option>
+    <option value="8">8</option>
+    <option value="9">9</option>
+    <option value="10">10</option>
+  </select> 
+  </div>
+  <div id="showInputArea" style="display:none;">
+    <button onclick="showInput()">HIỆN LẠI KHUNG NHẬP</button>
+
+  </div>
+
+  <div id="controlArea">
+    THỜI GIAN GHÉP CHỮ CHO MỖI TỪ:
+    <select id="timeLimit">
+  <option value="0">Không giới hạn</option>
+  <option value="15">15s</option>
+  <option value="30">30s</option>
+  <option value="45">45s</option>
+  <option value="60">60s (1 phút)</option>
+  <option value="75">75s</option>
+  <option value="90">90s</option>
+  <option value="105">105s</option>
+  <option value="120">120s (2 phút)</option>
+  <option value="135">135s</option>
+  <option value="150">150s</option>
+  <option value="165">165s</option>
+  <option value="180">180s (3 phút)</option>
+  <option value="195">195s</option>
+  <option value="210">210s</option>
+  <option value="225">225s</option>
+  <option value="240">240s (4 phút)</option>
+  <option value="255">255s</option>
+  <option value="270">270s</option>
+  <option value="285">285s</option>
+  <option value="300">300s (5 phút)</option>
+</select>
+
+    <button id="startBtn" onclick="setupGame()">BẮT ĐẦU</button>
+
+    <button id="checkBtn" onclick="checkAnswer()" disabled>KIỂM TRA</button>
+
+    <button id="showAnswerBtn" onclick="showAnswer()">HIỆN ĐÁP ÁN</button>
+
+  </div>
+
+  <div id="timer"></div>
+  <div id="slots"></div>
+  <div id="letters"></div>
+  <div id="infoArea"></div>
+
+  <audio id="correctSound" src="correct.mp3"></audio>
+  <audio id="wrongSound" src="wrong.mp3"></audio>
+
+  <script>
+let isFromFile = false; // đánh dấu có đang chơi theo file hay không
+let correctWordCount = 0;
+
+    let answer = '';
+    let timer = null;
+    let timeLeft = 0;
+let isTimeOutTriggered = false;
+
+    function hideInput() {
+      document.getElementById('inputArea').style.display = 'none';
+      document.getElementById('showInputArea').style.display = 'block';
+    }
+
+    function showInput() {
+      document.getElementById('inputArea').style.display = 'block';
+      document.getElementById('showInputArea').style.display = 'none';
+    }
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+  }
+  function setupGame(forceManual = false) {
+	  // 🔄 Xóa thông báo chớp cũ nếu có
+document.querySelectorAll('.blink-alert').forEach(el => el.remove());
+	  isTimeOutTriggered = false; // reset cờ hết giờ
+	  window.answerChecked = false;
+  const rawAnswer = document.getElementById('answerInput').value.toUpperCase().replace(/\s/g, '');
+
+  // Kiểm tra khi không có dữ liệu
+  if (!rawAnswer) {
+    // isFromFile cần xác định rõ ràng là true/false trước đoạn này
+    if (typeof isFromFile !== 'undefined' && isFromFile) {
+      return alert('Hãy click chọn một từ trong danh sách phía dưới!');
+    } else {
+      return alert('Hãy tạo trước một từ ở khung nhập, và ẩn khung nhập để chơi hoặc mở file đề đã có nhé!');
+    }
+  }
+  answer = rawAnswer;
+  const slots = document.getElementById('slots');
+  const letters = document.getElementById('letters');
+  const timerDisplay = document.getElementById('timer');
+  const infoArea = document.getElementById('infoArea');
+
+  slots.innerHTML = '';
+  letters.innerHTML = '';
+  timerDisplay.textContent = '';
+  clearInterval(timer);
+
+  for (let i = 0; i < answer.length; i++) {
+    const slot = document.createElement('div');
+    slot.className = 'slot';
+    slot.ondrop = dropLetter;
+    slot.ondragover = allowDrop;
+    slot.onclick = removeLetterFromSlot;
+    slots.appendChild(slot);
+  }
+
+  const charArray = shuffleArray(Array.from(answer));
+  charArray.forEach((char, i) => {
+    const div = document.createElement('div');
+    div.className = 'letter';
+    div.textContent = char;
+    div.draggable = true;
+    div.id = 'letter-' + i;
+    div.ondragstart = dragLetter;
+    div.ondrop = dropBackToLetters;
+    div.ondragover = allowDrop;
+div.onclick = handleLetterClick;
+    letters.appendChild(div);
+  });
+
+  window.letterPositions = [];
+  Array.from(letters.children).forEach((el, index) => {
+    window.letterPositions.push({ id: el.id, char: el.textContent, index });
+  });
+
+  const limit = parseInt(document.getElementById('timeLimit').value);
+  if (limit > 0) {
+    timeLeft = limit;
+    timerDisplay.textContent = 'Thời gian: ' + timeLeft + 's';
+    timerDisplay.style.color = 'white';
+    timerDisplay.style.fontWeight = 'bold';
+    timer = setInterval(() => {
+      timeLeft--;
+      timerDisplay.textContent = 'Thời gian: ' + timeLeft + 's';
+      if (timeLeft <= 0) {
+        clearInterval(timer);
+        timerDisplay.textContent = 'Hết giờ!';
+        document.getElementById('showAnswerBtn').disabled = false;
+        Array.from(letters.children).forEach(div => {
+          div.draggable = false;
+          div.ondragstart = null;
+          div.style.cursor = 'default';
+        });
+	      isTimeOutTriggered = true; // Đặt cờ
+        checkAnswer();
+      }
+    }, 1000);
+  } else {
+    document.getElementById('showAnswerBtn').disabled = false;
+  }
+
+  infoArea.innerHTML = `
+    <div style="
+      border: 2px solid #FFD700;
+      border-radius: 12px;
+      padding: 10px;
+      display: inline-block;
+      background-color: rgba(255, 255, 255, 0.85);
+      color: #000000;
+      font-size: 18px;
+      text-align: left;
+    ">
+      <div>🧩 Số chữ cái của từ là: 👉 <strong>${answer.length}</strong> chữ cái</div>
+      <div>💡 Gợi ý: 👉 <em>${document.getElementById('hintInput').value}</em></div>
+    </div>`;
+
+document.getElementById('startBtn').disabled = true;
+document.getElementById('startBtn').style.opacity = 0.5;
+document.getElementById('startBtn').style.cursor = 'not-allowed';
+
+  document.getElementById('showAnswerBtn').disabled = true;
+document.getElementById('checkBtn').disabled = false;
+
+}
+
+    function allowDrop(e) {
+      e.preventDefault();
+    }
+
+    function dragLetter(e) {
+      e.dataTransfer.setData('letter', e.target.textContent);
+      e.dataTransfer.setData('id', e.target.id);
+    }
+
+    function dropLetter(e) {
+  e.preventDefault();
+  const letter = e.dataTransfer.getData('letter');
+  const id = e.dataTransfer.getData('id');
+
+  if (e.target.textContent !== '') return;
+
+  e.target.textContent = letter;
+  e.target.className = 'slot';
+
+  const dragged = document.getElementById(id);
+  if (dragged) {
+    dragged.style.visibility = 'hidden'; // <-- chỉ ẩn đi thay vì xóa
+    dragged.setAttribute('data-used', 'true'); // đánh dấu là đã dùng
+  }
+}
+
+
+    function dropBackToLetters(e) {
+      e.preventDefault();
+    }
+
+    function removeLetterFromSlot(e) {
+  const slot = e.currentTarget;
+  const char = slot.textContent;
+  if (!char) return;
+
+  const lettersDiv = document.getElementById('letters');
+  const hidden = Array.from(lettersDiv.children).find(
+    el => el.textContent === char && el.getAttribute('data-used') === 'true'
+  );
+
+  if (hidden) {
+    hidden.style.visibility = 'visible';
+    hidden.setAttribute('data-used', 'false');
+  } else {
+    // Nếu không tìm được phần tử ẩn, tạo mới (phòng hờ)
+    const newDiv = document.createElement('div');
+    newDiv.className = 'letter';
+    newDiv.textContent = char;
+    newDiv.draggable = true;
+    newDiv.id = 'letter-' + Date.now();
+    newDiv.ondragstart = dragLetter;
+    newDiv.ondrop = dropBackToLetters;
+    newDiv.ondragover = allowDrop;
+    lettersDiv.appendChild(newDiv);
+  }
+
+  slot.textContent = '';
+  slot.className = 'slot';
+}
+function handleLetterClick(e) {
+  const letterDiv = e.currentTarget;
+  if (letterDiv.getAttribute('data-used') === 'true') return;
+
+  // Tìm ô trống đầu tiên
+  const emptySlot = Array.from(document.getElementById('slots').children).find(slot => slot.textContent === '');
+  if (!emptySlot) return;
+
+  // Gán chữ và ẩn đi
+  emptySlot.textContent = letterDiv.textContent;
+  emptySlot.className = 'slot';
+  letterDiv.style.visibility = 'hidden';
+  letterDiv.setAttribute('data-used', 'true');
+}
+
+function checkAnswer() {
+if (window.answerChecked) return;
+  const slots = Array.from(document.getElementById('slots').children);
+  const filled = slots.map(slot => slot.textContent).join('');
+  const correct = filled === answer;
+
+const info = document.getElementById('infoArea');
+if (isTimeOutTriggered) {
+  const msg = document.createElement('div');
+msg.className = 'blink-alert';
+msg.style.color = correct ? 'green' : 'red';
+msg.style.backgroundColor = 'white';
+msg.style.border = '3px solid ' + (correct ? 'green' : 'red');
+msg.style.borderRadius = '12px';
+msg.style.padding = '12px 16px';
+msg.style.marginTop = '20px';
+msg.style.display = 'inline-block';
+msg.style.boxShadow = '0 0 10px rgba(0,0,0,0.2)';
+msg.innerHTML = correct
+  ? '✅ Hết giờ nhưng bạn đã hoàn thành đúng – <strong>ĐƯỢC TÍNH ĐIỂM!</strong>'
+  : '❌ Hết giờ và bạn chưa hoàn thành đúng – <strong>KHÔNG ĐƯỢC TÍNH ĐIỂM!</strong>';
+const wrapper = document.createElement('div');
+wrapper.style.width = '100%';
+wrapper.style.marginTop = '10px';
+wrapper.appendChild(msg);
+info.appendChild(wrapper);
+}
+  // Phát âm thanh đúng hoặc sai
+  const sound = document.getElementById(correct ? 'correctSound' : 'wrongSound');
+  sound.play();
+
+  // Đánh dấu từng ô đúng hoặc sai
+  slots.forEach((slot, i) => {
+    slot.className = 'slot ' + (slot.textContent === answer[i] ? 'correct' : 'incorrect');
+  });
+
+  // Bật lại các nút chưa dùng
+  const allButtons = document.querySelectorAll('#wordButtons button');
+  allButtons.forEach(btn => {
+    if (btn.dataset.clicked === "false") {
+      btn.disabled = false;
+      btn.style.opacity = 1;
+      btn.style.backgroundColor = "blue";
+      btn.classList.add("word-button-blink");
+    }
+  });
+
+  // Nếu từ đúng, tăng số từ đúng
+  if (correct) {
+    correctWordCount++;
+  }
+window.answerChecked = true; // Đánh dấu là đã kiểm tra từ này rồi
+
+  // Lấy thang điểm được chọn
+  const selectedScore = parseInt(document.getElementById('scoreSelect').value || '0');
+  const totalScore = correctWordCount * selectedScore;
+
+  const display = document.getElementById('scoreDisplay');
+  if (selectedScore > 0) {
+    display.textContent = `🎯 Từ đúng: ${correctWordCount} → Điểm: ${totalScore}`;
+  } else {
+    display.textContent = '⚠️ Chưa chọn thang điểm!';
+  }
+
+  // 👉 Đánh dấu nút hiện tại là đã dùng
+  if (window.currentWordButton) {
+    window.currentWordButton.dataset.clicked = "true";
+    window.currentWordButton.disabled = true;
+    window.currentWordButton.style.backgroundColor = correct ? "green" : "red";
+    window.currentWordButton.style.opacity = 1;
+    window.currentWordButton.classList.remove("word-button-blink");
+  }
+// ✅ Reset trạng thái sau khi xong
+isFromFile = false;
+window.isManualPlay = false;
+
+  // 👉 Bỏ lưu trữ nút hiện tại
+  window.currentWordButton = null;
+
+  // Hiển thị hình ảnh đúng/sai
+  const resultImage = document.getElementById('resultImage');
+  if (correct) {
+    resultImage.src = 'chinhxac.png';
+    resultImage.alt = 'Chính xác';
+  } else {
+    resultImage.src = 'sairoi.png';
+    resultImage.alt = 'Sai rồi';
+  }
+  resultImage.style.display = 'block';
+
+  // Tự ẩn sau 5 giây
+  setTimeout(() => {
+    resultImage.style.display = 'none';
+  }, 5000);
+
+document.getElementById('checkBtn').disabled = true;
+
+}
+
+    function showAnswer() {
+      const slots = document.getElementById('slots');
+      const letters = document.getElementById('letters');
+      const timerDisplay = document.getElementById('timer');
+      clearInterval(timer);
+      timerDisplay.textContent = '';
+      slots.innerHTML = '';
+      for (let i = 0; i < answer.length; i++) {
+        const slot = document.createElement('div');
+        slot.className = 'slot correct';
+        slot.textContent = answer[i];
+        slot.onclick = removeLetterFromSlot;
+        slots.appendChild(slot);
+      }
+      letters.innerHTML = '';
+ // ✅ Reset trạng thái sau khi xong
+  isFromFile = false;
+  window.isManualPlay = false;
+    }
+  </script>
+<!-- Nút cố định có thể kéo -->
+<button class="menu-toggle draggable"><img src="TC.png" alt="Menu" class="menu-icon"></button>
+<!-- Overlay -->
+<div id="overlay" class="overlay"></div>
+<!-- Menu -->
+<div id="sideMenu" class="side-menu">
+<a href="index.html">🏠 Trang chủ</a>
+  <a href="vong_quay_so.html">🎯 Vòng quay số</a>
+  <a href="vong_quay_ten.html">👥 Vòng quay tên</a>
+  <a href="Ai_la_trieu_phu.html">💰 Ai là triệu phú</a>
+  <a href="O_Chu_bi_mat.html">🧩 Tìm Ô chữ bí mật</a>
+  <a href="O_Chu_tron_tim.html">🔍 Tinh mắt tìm từ</a>
+<a href="doan_tu.html">🔤 Game suy đoán từ</a>
+  <a href="soan_cau_hoi.html">📝 Soạn đề TN Tick chọn + chấm điểm</a>
+<a href="sukienVN.html">📖 Theo dòng sự kiện - lịch sử VN</a> 
+  <a href="fx-570VN%20Plus.html">📟 Giả lập Fx-570 + Bảng tuần hoàn NTHH</a>
+  <a href="Caro.html">🎮 Game Caro + Music</a>
+  <a href="#" onclick="toggleMenu()">❌ Đóng Menu</a>
+
+</div>
+
+<div style="
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+">
+  <button id="fullscreen-btn" onclick="toggleFullscreen()" style="
+    background-color: #3498db;
+    color: white;
+    font-weight: bold;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    width: 220px;
+    display: block;
+transition: background-color 0.3s ease;
+  ">
+    📱 FULL MÀN HÌNH
+  </button>
+</div>
+<script>
+/* Toggle fullscreen (dựng theo English.html) */
+function toggleFullscreen() {
+    const docElm = document.documentElement;
+
+    // Nếu đang fullscreen -> thoát
+    if (document.fullscreenElement || document.webkitIsFullScreen || document.mozFullScreen || document.msFullscreenElement) {
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+        } else if (document.mozCancelFullScreen) { // Firefox
+            document.mozCancelFullScreen();
+        } else if (document.webkitExitFullscreen) { // Chrome, Safari, Opera
+            document.webkitExitFullscreen();
+        } else if (document.msExitFullscreen) { // IE/Edge
+            document.msExitFullscreen();
+        }
+    } else {
+        // Vào fullscreen
+        if (docElm.requestFullscreen) {
+            docElm.requestFullscreen();
+        } else if (docElm.mozRequestFullScreen) { // Firefox
+            docElm.mozRequestFullScreen();
+        } else if (docElm.webkitRequestFullscreen) { // Chrome, Safari and Opera
+            docElm.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
+        } else if (docElm.msRequestFullscreen) { // IE/Edge
+            docElm.msRequestFullscreen();
+        }
+    }
+}
+
+/* Cập nhật nhãn nút khi trạng thái fullscreen thay đổi (nhấn ESC) */
+function updateFullscreenButton() {
+    const fullscreenBtn = document.getElementById('fullscreen-btn');
+    if (!fullscreenBtn) return;
+
+    const isFullscreen = document.fullscreenElement || document.webkitIsFullScreen || document.mozFullScreen || document.msFullscreenElement;
+
+    if (isFullscreen) {
+        fullscreenBtn.innerHTML = '❌ FULL MÀN HÌNH';
+        fullscreenBtn.style.backgroundColor = '#e67e22'; // màu khi đang fullscreen
+    } else {
+        fullscreenBtn.innerHTML = '📱 FULL MÀN HÌNH';
+        fullscreenBtn.style.backgroundColor = '#3498db'; // màu khi chưa fullscreen
+    }
+}
+
+/* Lắng nghe sự kiện thay đổi fullscreen (kèm các tiền tố cho trình duyệt) */
+document.addEventListener('fullscreenchange', updateFullscreenButton);
+document.addEventListener('webkitfullscreenchange', updateFullscreenButton);
+document.addEventListener('mozfullscreenchange', updateFullscreenButton);
+document.addEventListener('MSFullscreenChange', updateFullscreenButton);
+
+/* Khởi tạo trạng thái nút (nếu trang load mà đang fullscreen) */
+document.addEventListener('DOMContentLoaded', updateFullscreenButton);
+</script>
+
+<script>
+document.getElementById('createFileBtn').addEventListener('click', function() {
+  const defaultContent = "[Nội dung phải theo định dạng ĐÁP ÁN|GỢI Ý (ví dụ: VIETNAM|Đất nước hình chữ S)]\n";
+  const blob = new Blob([defaultContent], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'de_moi.txt';
+  document.body.appendChild(a);
+  a.click();
+
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+});
+
+
+</script>
+<!-- Cố định 2 nút ở góc trên bên phải -->
+<div style="position: fixed; top: 40px; right: 20px; z-index: 1001; display: flex; flex-direction: column; align-items: flex-end; gap: 10px;">
+  <button id="createFileBtn"
+    onclick="downloadSample()"
+    style="background-color: #32CD32; color: white; font-weight: bold; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer;">
+    📝 SOẠN 01 ĐỀ .txt
+  </button>
+
+  <input type="file" id="fileInput" accept=".txt" style="display: none;" />
+  <button onclick="document.getElementById('fileInput').click()" 
+    style="background-color: #1E90FF; color: white; font-weight: bold; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer;">
+    📂 MỞ ĐỀ TỪ FILE
+  </button>
+
+<div style="height: 10px;"></div>
+<div style="text-align: center;">
+  <img id="resultImage" src="" alt="" style="
+    margin-top: 8px;
+    max-width: 200px;
+    border-radius: 10px;
+    display: none;
+  " />
+</div>
+
+<div id="scoreDisplay" style="
+  margin-top: 8px;
+  width: 100%;
+  max-width: 230px;
+  height: 50px;
+  border-radius: 10px;
+  background-color: #fffbe6;
+  border: 2px solid #f0c040;
+  color: #333;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 16px;
+  font-family: 'Times New Roman', serif;
+  box-shadow: 0 0 6px rgba(0,0,0,0.1);
+">
+  Điểm: chưa chọn
+</div>
+
+</div>
+
+<div style="position: fixed; bottom: 20px; right: 20px; z-index: 1001; display: flex; flex-direction: column; align-items: flex-end; gap: 10px;">
+ 
+<!-- Nút RESET -->
+<button onclick="resetGame()" style="background-color: orange; color: white; font-weight: bold; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer;">
+  🔄 RESET LÀM MỚI
+</button>
+  
+  <!-- Nút VỀ TRANG CHỦ -->
+  <button onclick="window.location.href='index.html'" style="background-color: red; color: white; font-weight: bold; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer;">
+    🏠 VỀ TRANG CHỦ
+  </button>
+</div>
+
+
+<!-- Khu vực tạo các nút từ số – nằm ngang, căn giữa dưới -->
+<div id="wordButtons" style="
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1001;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px;
+  background-color: rgba(255, 255, 255, 0.8);
+  border-radius: 12px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.2);
+"></div>
+
+<script>
+function downloadSample() {
+  const content = `VIETNAM|Đất nước hình chữ S
+HANOI|Thủ đô của Việt Nam
+SAIGON|Tên cũ của TP HCM`;
+  const blob = new Blob([content], { type: "text/plain" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = "mau_de_nhieu_cau.txt";
+  link.click();
+}
+</script>
+<script>
+document.getElementById('fileInput').addEventListener('change', function(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+isFromFile = true;
+    let lines = e.target.result.trim().split('\n').filter(l => l.includes('|'));
+    if (lines.length === 0) return alert("File không đúng định dạng.");
+
+    // Trộn ngẫu nhiên
+    for (let i = lines.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [lines[i], lines[j]] = [lines[j], lines[i]];
+correctWordCount = 0;
+    }
+
+    const wordButtons = document.getElementById('wordButtons');
+    wordButtons.innerHTML = "";
+
+// Ẩn khung nhập và vô hiệu hóa nút hiện lại
+document.getElementById('inputArea').style.display = 'none';
+document.getElementById('showInputArea').style.display = 'block';
+document.querySelector('#showInputArea button').disabled = true;
+document.querySelector('#showInputArea button').style.opacity = 0.5;
+document.querySelector('#showInputArea button').style.cursor = 'not-allowed';
+
+   lines.forEach((line, index) => {
+  const [ans, hint] = line.split('|');
+  const btn = document.createElement('button');
+  btn.textContent = "Từ số " + (index + 1);
+  btn.style.backgroundColor = "blue";
+  btn.style.color = "white";
+  btn.style.border = "none";
+  btn.style.borderRadius = "5px";
+  btn.style.padding = "5px 10px";
+  btn.style.cursor = "pointer";
+  btn.dataset.clicked = "false"; // <-- trạng thái ban đầu
+btn.classList.add("word-button-blink"); // <-- hiệu ứng nút “chưa click”
+
+  btn.onclick = () => {
+    if (btn.dataset.clicked === "true") return;
+btn.classList.remove("word-button-blink");
+
+      window.currentWordButton = btn;
+
+    document.getElementById('answerInput').value = ans.trim();
+    document.getElementById('hintInput').value = hint.trim();
+    setupGame();
+
+    // Vô hiệu hóa tất cả các nút khi đang chơi 1 từ
+    const allButtons = document.querySelectorAll('#wordButtons button');
+    allButtons.forEach(b => {
+      b.disabled = true;
+      b.style.opacity = 0.5;
+    });
+  };
+
+  wordButtons.appendChild(btn);
+});
+
+  };
+
+  reader.readAsText(file, 'UTF-8');
+});
+
+function resetGame() {
+  correctWordCount = 0;
+  document.getElementById('scoreDisplay').textContent = "Điểm: chưa chọn";
+  location.reload(); // hoặc bạn có thể chỉ làm sạch UI nếu không muốn tải lại toàn trang
+}
+
+</script>
+
+<script src="menu.js"></script>
+<script src="chao_name.js"></script>
+
+</body>
+</html>
+<!-- KẾT THÚC -->

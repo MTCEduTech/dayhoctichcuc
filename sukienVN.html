@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <script src="auth.js"></script>
+  <title>Ngày này năm xưa</title>
+  <link rel="stylesheet" href="sukienVN.css">
+  <link rel="stylesheet" href="menu.css">
+  <style>
+   .footer-fixed {
+  position: fixed;
+  bottom: 0;
+  left: 50%; /* Bắt đầu từ giữa */
+  transform: translateX(-45%); /* Lệch phải nhẹ từ giữa */
+  background-color: transparent; /* Bỏ nền */
+  color: black;
+  font-size: 16px;
+  padding: 10px 20px;
+  z-index: 9999;
+  font-family: 'Times New Roman', serif;
+}
+  .footer-fixed em strong {
+    font-style: italic;
+    font-weight: bold;
+  }
+  .footer-fixed em {
+    font-style: italic;
+    font-weight: normal;
+  }
+</style>
+  
+</head>
+<body>
+  <div class="container">
+    <h1> NGÀY NÀY NĂM XƯA </h1>
+    <div class="date-display" id="displayDate"> -- / --</div>
+     <div class="filters">
+      <input id="day" type="number" placeholder="Ngày" min="1" max="31">
+<input id="month" type="number" placeholder="Tháng" min="1" max="12">
+
+      <input id="year" type="number" placeholder="Năm..">
+       <input id="keyword" type="text" placeholder="🔎 Từ khóa liên quan" style="width: 180px;">
+      <button onclick="applyFilter()">🔍</button>
+    </div>
+
+<div class="event-list-wrapper">
+  <div class="event-list">
+    <div id="events"></div>
+  </div>
+</div>
+
+  </div>
+
+<div id="popup" class="popup hidden">
+  <div class="popup-wrapper">
+    <div id="popup-date-box"></div>
+    <div class="popup-content">
+      <div id="popupContent"></div>
+    </div>
+    <button class="popup-close" onclick="closePopup()">TẮT</button>
+  </div>
+</div>
+
+
+  <script src="sukienVN.js"></script>
+  <div class="overlay"></div>
+
+<div style="
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+">
+  <button id="fullscreen-btn" onclick="toggleFullscreen()" style="
+    background-color: #3498db;
+    color: white;
+    font-weight: bold;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    width: 220px;
+    display: block;
+transition: background-color 0.3s ease;
+  ">
+    📱 FULL MÀN HÌNH
+  </button>
+</div>
+<script>
+function toggleFullscreen() {
+    const docElm = document.documentElement;
+
+    // Nếu đang fullscreen -> thoát
+    if (document.fullscreenElement || document.webkitIsFullScreen || document.mozFullScreen || document.msFullscreenElement) {
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+        } else if (document.mozCancelFullScreen) { // Firefox
+            document.mozCancelFullScreen();
+        } else if (document.webkitExitFullscreen) { // Chrome, Safari, Opera
+            document.webkitExitFullscreen();
+        } else if (document.msExitFullscreen) { // IE/Edge
+            document.msExitFullscreen();
+        }
+    } else {
+        // Vào fullscreen
+        if (docElm.requestFullscreen) {
+            docElm.requestFullscreen();
+        } else if (docElm.mozRequestFullScreen) { // Firefox
+            docElm.mozRequestFullScreen();
+        } else if (docElm.webkitRequestFullscreen) { // Chrome, Safari and Opera
+            docElm.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
+        } else if (docElm.msRequestFullscreen) { // IE/Edge
+            docElm.msRequestFullscreen();
+        }
+    }
+}
+
+/* Cập nhật nhãn nút khi trạng thái fullscreen thay đổi (nhấn ESC) */
+function updateFullscreenButton() {
+    const fullscreenBtn = document.getElementById('fullscreen-btn');
+    if (!fullscreenBtn) return;
+
+    const isFullscreen = document.fullscreenElement || document.webkitIsFullScreen || document.mozFullScreen || document.msFullscreenElement;
+
+    if (isFullscreen) {
+        fullscreenBtn.innerHTML = '❌ FULL MÀN HÌNH';
+        fullscreenBtn.style.backgroundColor = '#e67e22'; // màu khi đang fullscreen
+    } else {
+        fullscreenBtn.innerHTML = '📱 FULL MÀN HÌNH';
+        fullscreenBtn.style.backgroundColor = '#3498db'; // màu khi chưa fullscreen
+    }
+}
+
+/* Lắng nghe sự kiện thay đổi fullscreen (kèm các tiền tố cho trình duyệt) */
+document.addEventListener('fullscreenchange', updateFullscreenButton);
+document.addEventListener('webkitfullscreenchange', updateFullscreenButton);
+document.addEventListener('mozfullscreenchange', updateFullscreenButton);
+document.addEventListener('MSFullscreenChange', updateFullscreenButton);
+
+/* Khởi tạo trạng thái nút (nếu trang load mà đang fullscreen) */
+document.addEventListener('DOMContentLoaded', updateFullscreenButton);
+</script>
+
+  <div style="
+  position: fixed;
+  bottom: 10px;
+  right: 20px;
+  z-index: 1001;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-end;
+">
+  <button class="reset-btn" onclick="window.location.reload()" style="
+    background-color: #ff9800;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    width: 220px;
+font-weight: bold;
+  ">🔄 RESET</button>
+
+  <button onclick="window.location.href='index.html'" style="
+    background-color: red;
+    color: white;
+    font-weight: bold;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    width: 220px;
+  ">
+    🏠 VỀ TRANG CHỦ
+  </button>
+</div>
+
+<div class="footer-fixed">  
+<span style="font-size: 16px; color: black;">
+<em><strong>👨‍💻 Trích dẫn:</strong></em> Các sự kiện lịch sử đáng nhớ của nước ta <br>
+    <em>🏫 Nguồn đã cho phép:</em> Chuyên trang tư liệu của TTXVN (https://nvsk.vnanet.vn/ngay-nay-nam-xua.vna)
+  </span><center></center></div>
+
+<!-- Nút cố định có thể kéo -->
+<button class="menu-toggle draggable"><img src="TC.png" alt="Menu" class="menu-icon"></button>
+<!-- Overlay -->
+<div id="overlay" class="overlay"></div>
+<!-- Menu -->
+<div id="sideMenu" class="side-menu">
+<a href="index.html">🏠 Trang chủ</a>
+  <a href="vong_quay_so.html">🎯 Vòng quay số</a>
+  <a href="vong_quay_ten.html">👥 Vòng quay tên</a>
+  <a href="Ai_la_trieu_phu.html">💰 Ai là triệu phú</a>
+  <a href="O_Chu_bi_mat.html">🧩 Tìm Ô chữ bí mật</a>
+  <a href="O_Chu_tron_tim.html">🔍 Tinh mắt tìm từ</a>
+  <a href="doan_tu.html">🔤 Game suy đoán từ</a>
+  <a href="soan_cau_hoi.html">📝 Soạn đề TN Tick chọn + chấm điểm</a>
+  <a href="sukienVN.html">📖 Theo dòng sự kiện - lịch sử VN</a> 
+  <a href="fx-570VN%20Plus.html">📟 Giả lập Fx-570 + Bảng tuần hoàn NTHH</a>
+  <a href="Caro.html">🎮 Game Caro + Music</a>
+  <a href="#" onclick="toggleMenu()">❌ Đóng Menu</a>
+
+</div>
+
+<script src="menu.js"></script>
+<script src="chao_name.js"></script>
+</body>
+</html>
